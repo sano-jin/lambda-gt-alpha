@@ -4,6 +4,7 @@ type ctx = string * string list
 
 type atom_name =
   | PConstr of string  (** constructor name *)
+  | PNum of int  (** integer *)
   | PLam of ctx * exp  (** lambda abstraction *)
 
 (** graph template *)
@@ -19,5 +20,6 @@ and exp =
   | Graph of graph  (** graph *)
   | Case of exp * graph * exp * exp  (** Case of *)
   | App of exp * exp  (** Apply *)
+  | Add of exp * exp  (** Addition *)
   | LetRec of ctx * ctx * exp * exp  (** let rec f x = e1 in e2 *)
   | Let of ctx * exp * exp  (** let x = e1 in e2 *)

@@ -11,6 +11,14 @@ let ctx_of (x, args) = (x, List.map (fun x -> FreeLink x) args)
 
 let rec eval theta = function
   | Graph graph -> fuse_fusions @@ synthesis theta graph
+  | Add (e1, e2) -> (
+      let v1 = eval theta e1 in
+      let v2 = eval theta e2 in
+      match (v1, v2) with
+      | [ (Num n1, xs1) ], [ (Num n2, _) ] -> [ (Num (n1 + n2), xs1) ]
+      | _ ->
+          failwith @@ "number expected but got " ^ string_of_graph v1 ^ " and "
+          ^ string_of_graph v2)
   | App (e1, e2) -> (
       let v1 = eval theta e1 in
       let v2 = eval theta e2 in

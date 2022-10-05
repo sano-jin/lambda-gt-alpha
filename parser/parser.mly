@@ -8,6 +8,7 @@
 (** Symbol atom name *)
 %token <string> VAR    (** x, y, abc, ... *)
 %token <string> CONSTR (** Cons, Node, ... *)
+%token <int> NUMBER (** 1, 2, ... *)
 
 (** link name *)
 %token <string> LINK   (** _X, _Y, _ABC, ...  *)
@@ -27,6 +28,7 @@
 %token REC            (**  "rec" *)
 %token IN             (**  "in" *)
 %token EQ             (**  "=" *)
+%token PLUS           (**  "+" *)
 
 (** Parentheses *)
 %token LPAREN         (**  '(' *)
@@ -44,6 +46,7 @@
 (** Operator associativity *)
 %nonassoc  DOT
 %left      COMMA
+%left      PLUS
 
 
 
@@ -64,6 +67,7 @@ let args_inner := ~ = separated_list(COMMA, LINK); <>
 
 atom_name:
   | CONSTR { PConstr ($1) }
+  | NUMBER { PNum ($1) }
   | LT LAMBDA ctx DOT exp GT { PLam ($3, $5) }
 
 
@@ -110,6 +114,8 @@ exp_single:
       { Let ($2, $4, $6) }
  
   | LPAREN exp RPAREN { $2 }
+
+  | exp PLUS exp { Add ($1, $3) }
 
 
 exp:

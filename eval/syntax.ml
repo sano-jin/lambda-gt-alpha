@@ -11,6 +11,7 @@ let string_of_link = function
 
 type atom_name =
   | Constr of string  (** constructor name *)
+  | Num of int  (** integer *)
   | Lam of Parse.ctx * exp * theta  (** lambda abstraction *)
   | RecLam of Parse.ctx * Parse.ctx * exp * theta  (** lambda abstraction *)
 
@@ -27,6 +28,7 @@ type e_graph = atom list * ctx list
 
 let string_of_atom_name = function
   | Constr name -> name
+  | Num i -> string_of_int i
   | Lam _ | RecLam _ -> "<fun>"
 
 let string_of_atom = function

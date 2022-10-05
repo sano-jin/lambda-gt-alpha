@@ -28,6 +28,7 @@ rule token = parse
   | "rec"       { REC }
   | "in"        { IN }
   | "="         { EQ }
+  | "+"         { PLUS }
 
   (** Parentheses *)
   | '('			{ LPAREN }
@@ -42,6 +43,10 @@ rule token = parse
   (** constructor name *)
   | upper alnum*
     { CONSTR (Lexing.lexeme lexbuf) }
+
+  (** integer name *)
+  | digit+
+    { NUMBER (int_of_string @@ Lexing.lexeme lexbuf) }
 
   (** variable name *)
   | lower alnum*
