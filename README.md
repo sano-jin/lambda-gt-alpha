@@ -1,7 +1,7 @@
 # A Reference Interpreter of the Lambda GT Language
 
 [![License](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)](#license)
-[![Twitter](https://img.shields.io/badge/twitter-%40sano65747676-blue?style=flat-square)](https://twitter.com/sano65747676)
+[![Twitter](https://img.shields.io/badge/twitter-%40sano_jn-blue?style=flat-square)](https://twitter.com/sano_jn)
 
 ![examples of graphs](docs/graphs-image.svg)
 
@@ -171,7 +171,7 @@ lexical/syntactical analyzer
 
 Please feel free to contact me (ask me any questions about this).
 
-- [twitter@sano65747676](https://twitter.com/sano65747676)
+- [twitter@sano_jn](https://twitter.com/sano_jn)
 - [homepage](https://www.ueda.info.waseda.ac.jp/~sano/)
 
 ## License
