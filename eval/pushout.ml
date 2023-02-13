@@ -3,7 +3,7 @@ open Util.OptionExtra
 open Syntax
 open Preprocess
 
-(** lambda abstraction atom を評価した時に，クロージャにする *)
+(** evaluate a lambda abstraction atom and make a closure with the environment. *)
 let make_closure theta = function
   | Lam (ctx, e, _), links -> (Lam (ctx, e, theta), links)
   | atom -> atom
@@ -33,6 +33,9 @@ let get_local_fusion_opt = function
   | Constr "><", ([ (LocalLink _ as x); y ] | [ y; (LocalLink _ as x) ]) ->
       Some (x, y)
   | _ -> None
+
+(** Get fusing links from an atom. *)
+let get_fusion_opt = function Constr "><", [ x; y ] -> Some (x, y) | _ -> None
 
 (** [fuse_fusions graph] absorbs all the fusions in the [graph] except for that
     connects free links. *)

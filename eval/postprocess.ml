@@ -18,13 +18,16 @@ let gather_links =
 
 (** link_env から補った，局所リンク同士を引数にもつ fusion を作る *)
 let local2local_fusions_of_link_env =
-  let helper = function [] -> [] | x :: xs -> List.map (fusion_of x) xs in
+  let helper = function
+    | [] -> []
+    | x :: xs -> List.map (curry fusion_of x) xs
+  in
   List.concat_map helper <. gather_links
 
 (** マッチング対象のグラフでは自由リンクだが，テンプレートのリンクでは局所リンクであった場合に，自由リンクと局所リンクの fusion
     を作ってグラフに補う． *)
 let local2free_fusions_of_link_env =
-  List.map (fun (x, y) -> fusion_of (LocalLink x) y)
+  List.map (fun (x, y) -> fusion_of (LocalLink x, y))
   <. List.filter (is_free_link <. snd)
 
 (** マッチング対象のグラフのリンク名をテンプレートのリンク名に変換する． [link_env] と [rest_graph] を引数にとる． *)

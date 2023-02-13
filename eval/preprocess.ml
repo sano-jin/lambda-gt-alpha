@@ -5,10 +5,10 @@ open Syntax
 let get_link link_env x =
   match List.assoc_opt x link_env with None -> FreeLink x | Some y -> y
 
-(** Alpha convert local link names to numbers and flattern graph to a list of
+(** Alpha convert local link names to numbers and flatten graph to a list of
     atoms.
 
-    @param i the seed for the indentifier of local links. *)
+    @param i the seed for the identifier of local links. *)
 let rec alpha i link_env = function
   | Zero -> (i, ([], []))
   | Atom (v, args) ->

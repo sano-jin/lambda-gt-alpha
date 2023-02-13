@@ -145,6 +145,9 @@ let combine_opt list1 list2 =
 let string_of_list string_of_elem ls =
   "[" ^ String.concat "; " (List.map string_of_elem ls) ^ "]"
 
+let string_of_seq string_of_elem ls =
+  String.concat ", " (List.map string_of_elem ls)
+
 (** Set operations. * Note this is not as efficient as the operations that the
     [Set] module provides *)
 

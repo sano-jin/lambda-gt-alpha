@@ -1,4 +1,4 @@
-(** Pretty print expressoins. *)
+(** Pretty print expressions. *)
 
 open Eval
 open Parse
