@@ -1,5 +1,5 @@
 open Util
-open Eval
+open Gt
 
 let links_of_atoms atoms = List.concat_map snd @@ atoms
 
@@ -29,7 +29,7 @@ let partition_links link_dict =
 
 (** アトムリストを可視化しやすいデータ構造に変換する．
 
-    @author simplify 局所リンクを除去する． *)
+    @author simplify 局所リンクを除去するかどうかの真偽値． *)
 let portgraph_of_atoms ~simplify (atoms : graph) =
   (* リンク名からポートの集合への写像を作る． *)
   let link_map =

@@ -1,0 +1,4 @@
+(library
+ (public_name lambda_gt_alpha.gt)
+ (name gt)
+ (libraries lambda_gt_alpha.util lambda_gt_alpha.parser))

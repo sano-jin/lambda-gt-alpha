@@ -1,11 +1,5 @@
 open Parse
-include Syntax
-include Preprocess
-include Match_atoms
-include Match_ctxs
-include Match
-include Pushout
-include Postprocess
+open Gt
 
 let ctx_of (x, args) = (x, List.map (fun x -> FreeLink x) args)
 

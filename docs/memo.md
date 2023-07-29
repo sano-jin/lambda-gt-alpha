@@ -53,6 +53,7 @@ TODO: それぞれの使い方を整理してまとめる．
 - docs: ドキュメント．
 - dune-project
 - eval: evaluator
+- gt: graph transformation を扱うコード．graph substitution も含む．
 - example: 例題．
 - js: vis のインタプリタを javascript から用いるためのコード．
 - lib: 使っていない．全部この下に配置し直すべきかも．

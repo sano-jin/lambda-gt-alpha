@@ -1,10 +1,11 @@
 open Util
 open Parse
+open Gt
 open Eval
 
 let links_of_atoms atoms = List.concat_map snd @@ atoms
 
-type cont = Cont of (Eval.graph -> (cont * Eval.graph, Eval.graph) Either.t)
+type cont = Cont of (Gt.graph -> (cont * Gt.graph, Gt.graph) Either.t)
 
 let app_cont = function Cont cont -> cont
 
@@ -84,7 +85,7 @@ let exec code =
 
 let vis () =
   let graph = exec @@ read_file Sys.argv.(1) in
-  print_endline @@ "// " ^ Eval.string_of_graph graph;
+  print_endline @@ "// " ^ Gt.string_of_graph graph;
   print_newline ()
 
 let pretty_graph = Json.pretty_graph

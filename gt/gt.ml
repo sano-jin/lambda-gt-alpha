@@ -1,4 +1,10 @@
 open Util
+include Syntax
+include Preprocess
+include Match_atoms
+include Match_ctxs
+include Pushout
+include Postprocess
 
 (** グラフのマッチングを行い．graph substitions を返す *)
 let match_ (atoms_lhs, ctxs_lhs) target_graph =

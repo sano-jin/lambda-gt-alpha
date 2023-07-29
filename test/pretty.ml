@@ -1,6 +1,5 @@
 (** Pretty print expressoins. *)
 
-open Eval
 open Parse
 open Util
 
@@ -44,22 +43,22 @@ and string_of_nus = function
   | g -> ". " ^ string_of_p_graph g
 
 let string_of_rule (lhs, rhs) =
-  string_of_graph lhs ^ " ---> " ^ string_of_graph rhs
+  Gt.string_of_graph lhs ^ " ---> " ^ Gt.string_of_graph rhs
 
 let string_of_ctx (name, args) =
-  name ^ " [" ^ String.concat ", " (List.map string_of_link args) ^ "]"
+  name ^ " [" ^ String.concat ", " (List.map Gt.string_of_link args) ^ "]"
 
 let string_of_e_graph (atoms, gctxs) =
   "{"
   ^ String.concat ", "
-      (List.map string_of_atom atoms @ List.map string_of_ctx gctxs)
+      (List.map Gt.string_of_atom atoms @ List.map string_of_ctx gctxs)
   ^ "}"
 
 let string_of_ctxs ctxs =
   "{" ^ String.concat ", " (List.map string_of_ctx ctxs) ^ "}"
 
-let string_of_theta (theta : theta) =
+let string_of_theta (theta : Gt.theta) =
   let helper (ctx, graph) =
-    string_of_ctx ctx ^ " -> " ^ Eval.string_of_graph graph
+    string_of_ctx ctx ^ " -> " ^ Gt.string_of_graph graph
   in
   ListExtra.string_of_list helper theta

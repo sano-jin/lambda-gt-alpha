@@ -1,12 +1,11 @@
-open Eval
 open Util
 open OptionExtra
 
-let alpha_min = snd <. alpha_atoms (0, [])
+let alpha_min = snd <. Gt.alpha_atoms (0, [])
 
 let match_and_synthesis graph1 lhs graph2 =
-  let+ theta = Eval.match_ lhs graph1 in
-  Eval.subst theta graph2
+  let+ theta = Gt.match_ lhs graph1 in
+  Gt.subst theta graph2
 
 let test_synthesis graph1 lhs graph2 =
   prerr_endline @@ "testing whether '" ^ graph1 ^ "' can be matched with ("
@@ -16,17 +15,17 @@ let test_synthesis graph1 lhs graph2 =
   let lhs = Parse.parse_graph lhs in
   (* let _, (graph1, _) = alpha100 graph1 in let _, (graph2, _) = alpha100
      graph2 in let graph1 = alpha_min graph1 in *)
-  let _, (graph1, _) = alpha100 graph1 in
-  let _, (lhs_atoms, lhs_ctxs) = alpha100 lhs in
+  let _, (graph1, _) = Gt.alpha100 graph1 in
+  let _, (lhs_atoms, lhs_ctxs) = Gt.alpha100 lhs in
   let graph1 = alpha_min graph1 in
-  prerr_endline @@ string_of_graph graph1;
+  prerr_endline @@ Gt.string_of_graph graph1;
   prerr_endline @@ Pretty.string_of_e_graph (lhs_atoms, lhs_ctxs);
   prerr_endline @@ Pretty.string_of_p_graph graph2;
   prerr_endline
     (match match_and_synthesis graph1 (lhs_atoms, lhs_ctxs) graph2 with
     | None -> "match failed"
     | Some graph ->
-        "match succeded and reduced to graph = " ^ string_of_graph graph);
+        "match succeded and reduced to graph = " ^ Gt.string_of_graph graph);
   prerr_newline ()
 
 let test () =

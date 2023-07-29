@@ -1,21 +1,20 @@
-open Eval
 open Pretty
 open Util
 
-let alpha_min = snd <. alpha_atoms (0, [])
+let alpha_min = snd <. Gt.alpha_atoms (0, [])
 
 let test_find_atoms graph lhs =
   prerr_endline @@ "testing whether '" ^ graph ^ "' can be matched with (" ^ lhs
   ^ ":- ...)";
   let graph = Parse.parse_graph graph in
   let lhs = Parse.parse_graph lhs in
-  let _, (graph, _) = alpha100 graph in
+  let _, (graph, _) = Gt.alpha100 graph in
   let graph = alpha_min graph in
-  let _, (lhs_atoms, lhs_ctxs) = alpha100 lhs in
-  prerr_endline @@ string_of_graph graph;
-  prerr_endline @@ string_of_graph lhs_atoms ^ ", " ^ string_of_ctxs lhs_ctxs;
+  let _, (lhs_atoms, lhs_ctxs) = Gt.alpha100 lhs in
+  prerr_endline @@ Gt.string_of_graph graph;
+  prerr_endline @@ Gt.string_of_graph lhs_atoms ^ ", " ^ string_of_ctxs lhs_ctxs;
   prerr_endline
-    (match Eval.match_ (lhs_atoms, lhs_ctxs) graph with
+    (match Gt.match_ (lhs_atoms, lhs_ctxs) graph with
     | None -> "match failed"
     | Some theta -> "match succeded with theta = " ^ string_of_theta theta);
   prerr_newline ()

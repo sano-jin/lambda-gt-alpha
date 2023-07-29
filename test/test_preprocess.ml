@@ -1,10 +1,8 @@
-open Eval
-
 let test str =
   prerr_endline @@ "testing ... " ^ str;
   let graph = Parse.parse_graph str in
   prerr_endline @@ "    " ^ Pretty.string_of_p_graph graph;
-  let _, e_graph = alpha100 graph in
+  let _, e_graph = Gt.alpha100 graph in
   prerr_endline @@ "    " ^ Pretty.string_of_e_graph e_graph
 
 let test () =

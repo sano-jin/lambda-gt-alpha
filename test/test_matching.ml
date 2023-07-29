@@ -1,10 +1,11 @@
-open Eval
 open Util
 
-let alpha_min = snd <. alpha_atoms (0, [])
+let alpha_min = snd <. Gt.alpha_atoms (0, [])
 
 let string_of_link_env =
-  let helper (x, y) = string_of_link (LocalLink x) ^ "->" ^ string_of_link y in
+  let helper (x, y) =
+    Gt.string_of_link (LocalLink x) ^ "->" ^ Gt.string_of_link y
+  in
   ListExtra.string_of_list helper
 
 let test_find_atoms host_graph template_graph =
@@ -12,18 +13,18 @@ let test_find_atoms host_graph template_graph =
   ^ "' can be matched with a graph template " ^ template_graph ^ ".";
   let graph = Parse.parse_graph host_graph in
   let lhs = Parse.parse_graph template_graph in
-  let _, (graph, _) = alpha100 graph in
+  let _, (graph, _) = Gt.alpha100 graph in
   let graph = alpha_min graph in
-  let _, (lhs, _) = alpha100 lhs in
-  prerr_endline @@ string_of_graph graph;
-  prerr_endline @@ string_of_graph lhs;
+  let _, (lhs, _) = Gt.alpha100 lhs in
+  prerr_endline @@ Gt.string_of_graph graph;
+  prerr_endline @@ Gt.string_of_graph lhs;
   prerr_endline
-    (match Eval.match_atoms Option.some lhs graph with
+    (match Gt.match_atoms Option.some lhs graph with
     | None -> "match failed"
     | Some (link_env, graph) ->
         "match succeded with link_env = "
         ^ string_of_link_env link_env
-        ^ " where graph = " ^ string_of_graph graph ^ " left");
+        ^ " where graph = " ^ Gt.string_of_graph graph ^ " left");
   prerr_newline ()
 
 let test () =
