@@ -142,4 +142,4 @@ let json_of_graph graph_ =
 (** 可視化のために，アトムリストを JSON の文字列に変換する *)
 let pretty_graph =
   Yojson.Basic.pretty_to_string <. json_of_graph
-  <. portgraph_of_atoms ~simplify:false
+  <. portgraph_of_atoms ~simplify:true
