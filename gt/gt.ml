@@ -16,4 +16,5 @@ let match_ (atoms_lhs, ctxs_lhs) target_graph =
   | Some (theta, []) -> Some theta
   | _ -> None
 
-let ctx_of (x, args) = (x, List.map (fun x -> FreeLink x) args)
+(** 文字列のリストを自由リンクのリストへ変換する． *)
+let ctx_of (x, ys) = (x, List.map (fun y -> FreeLink y) ys)
