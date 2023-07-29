@@ -15,3 +15,5 @@ let match_ (atoms_lhs, ctxs_lhs) target_graph =
   with
   | Some (theta, []) -> Some theta
   | _ -> None
+
+let ctx_of (x, args) = (x, List.map (fun x -> FreeLink x) args)

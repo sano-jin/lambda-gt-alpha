@@ -1,7 +1,6 @@
 open Util
 open Parse
 open Gt
-open Eval
 
 let links_of_atoms atoms = List.concat_map snd @@ atoms
 
@@ -42,12 +41,12 @@ let rec eval theta exp cont =
       @@ fun v2 ->
       match v1 with
       | [ (Lam (ctx, e, theta), _) ] ->
-          let ctx = ctx_of ctx in
+          let ctx = Gt.ctx_of ctx in
           let theta = (ctx, v2) :: theta in
           eval theta e cont
       | [ ((RecLam (ctx1, ctx2, e, theta), _) as rec_lam) ] ->
-          let ctx1 = ctx_of ctx1 in
-          let ctx2 = ctx_of ctx2 in
+          let ctx1 = Gt.ctx_of ctx1 in
+          let ctx2 = Gt.ctx_of ctx2 in
           let theta = (ctx1, [ rec_lam ]) :: (ctx2, v2) :: theta in
           eval theta e cont
       | [ (Constr "Log", _) ] -> Either.Left (cont, v2)
@@ -64,12 +63,12 @@ let rec eval theta exp cont =
   | Let (ctx, e1, e2) ->
       eval theta e1 @@ k
       @@ fun v1 ->
-      let ctx = ctx_of ctx in
+      let ctx = Gt.ctx_of ctx in
       let theta = (ctx, v1) :: theta in
       eval theta e2 cont
   | LetRec (ctx1, ctx2, e1, e2) ->
       let rec_lam = RecLam (ctx1, ctx2, e1, theta) in
-      let ctx = ctx_of ctx1 in
+      let ctx = Gt.ctx_of ctx1 in
       let theta = (ctx, [ (rec_lam, snd ctx) ]) :: theta in
       eval theta e2 cont
 
