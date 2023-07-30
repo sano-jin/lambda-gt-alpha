@@ -52,7 +52,8 @@ let string_of_ctx (name, args) =
 let string_of_e_graph (atoms, gctxs) =
   "{"
   ^ String.concat ", "
-      (List.map Gt.string_of_atom atoms @ List.map string_of_ctx gctxs)
+      (List.map (Gt.string_of_atom Gt.string_of_atom_name) atoms
+      @ List.map string_of_ctx gctxs)
   ^ "}"
 
 let string_of_ctxs ctxs =

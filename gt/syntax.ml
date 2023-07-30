@@ -36,7 +36,7 @@ let string_of_atom_name = function
   | Int i -> string_of_int i
   | Lam _ | RecLam _ -> "<fun>"
 
-let string_of_atom = function
+let string_of_atom string_of_atom_name = function
   | Constr "><", [ x; y ] -> string_of_link x ^ " >< " ^ string_of_link y
   | atom_name, [] -> string_of_atom_name atom_name
   | atom_name, args ->
@@ -61,12 +61,16 @@ let free_links_of_atoms atoms =
   (List.concat_map @@ List.filter is_free_link <. List.map snd) atoms
 
 (** [dump_atoms atoms] converts [atoms] to a string without \nu. *)
-let dump_atoms atoms =
-  "{" ^ String.concat ", " (List.map string_of_atom atoms) ^ "}"
+let dump_atoms string_of_atom_name atoms =
+  "{"
+  ^ String.concat ", " (List.map (string_of_atom string_of_atom_name) atoms)
+  ^ "}"
 
 (** [string_of_graph_with_nu atoms] pretty prints [atoms]. *)
-let string_of_graph (atoms as graph) =
-  let graph_str = String.concat ", " @@ List.map string_of_atom atoms in
+let string_of_graph_helper string_of_atom_name (atoms as graph) =
+  let graph_str =
+    String.concat ", " @@ List.map (string_of_atom string_of_atom_name) atoms
+  in
   let local_links = List.sort_uniq compare @@ local_links_of_atoms graph in
   if local_links = [] then "{" ^ graph_str ^ "}"
   else
@@ -75,3 +79,6 @@ let string_of_graph (atoms as graph) =
     in
     if List.length atoms > 1 then "{" ^ local_links_str ^ "(" ^ graph_str ^ ")}"
     else "{" ^ local_links_str ^ graph_str ^ "}"
+
+(** [string_of_graph atoms] pretty prints [atoms]. *)
+let string_of_graph = string_of_graph_helper string_of_atom_name
