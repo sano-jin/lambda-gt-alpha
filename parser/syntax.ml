@@ -1,28 +1,38 @@
 (** Syntax *)
 
-type ctx = string * string list
+type var = string * string list
+
+(** graph template *)
+type 'atom_name graph =
+  | Zero
+  | Atom of 'atom_name * string list  (** atom. e.g. [C(_X, _Y, _Z)] *)
+  | Var of var  (** graph context. e.g. [x\[_X, _Y\]] *)
+  | Mol of 'atom_name graph * 'atom_name graph  (** molecule *)
+  | Nu of string * 'atom_name graph  (** hyperlink creation *)
+  | Fuse of string * string  (** Fusion. e.g. [_X >< _Y] *)
+
+(** Syntax of the type system. *)
+
+type ty_graph = string graph
+(** type graph (RHS of production rules). *)
+
+type ty_rule = var * ty_graph
+
+(** Syntax of the language. *)
 
 type atom_name =
   | PConstr of string  (** constructor name *)
   | PInt of int  (** integer literal *)
-  | PLam of ctx * exp  (** lambda abstraction *)
-
-(** graph template *)
-and graph =
-  | Zero
-  | Atom of atom_name * string list  (** atom. e.g. a(_X, _Y) *)
-  | Ctx of ctx  (** graph context. e.g. x[_X, _Y] *)
-  | Mol of graph * graph  (** molecule *)
-  | Nu of string * graph  (** hyperlink creation *)
+  | PLam of var * exp  (** lambda abstraction *)
 
 (** expression *)
 and exp =
   | BinOp of (int -> int -> int) * string * exp * exp  (** Binary operator *)
   | RelOp of (int -> int -> bool) * string * exp * exp  (** Binary operator *)
-  | Graph of graph  (** Graph *)
-  | Case of exp * graph * exp * exp  (** Case expression *)
+  | Graph of atom_name graph  (** Graph *)
+  | Case of exp * atom_name graph * exp * exp  (** Case expression *)
   | App of exp * exp  (** Apply *)
-  | LetRec of ctx * ctx * exp * exp  (** let rec f x = e1 in e2 *)
-  | Let of ctx * exp * exp  (** let x = e1 in e2 *)
+  | LetRec of var * var * exp * exp  (** let rec f x = e1 in e2 *)
+  | Let of var * exp * exp  (** let x = e1 in e2 *)
 
-let make_lambda (_, xs) ctx exp = Graph (Atom (PLam (ctx, exp), xs))
+let make_lambda (_, xs) var exp = Graph (Atom (PLam (var, exp), xs))

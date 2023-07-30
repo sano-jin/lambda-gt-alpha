@@ -60,9 +60,12 @@
 %nonassoc  LPAREN LCBRACKET
 
 
+%start ty_graph_eof
+%type <string graph> ty_graph_eof
+
 
 %start graph_eof
-%type <graph> graph_eof
+%type <atom_name graph> graph_eof
 
 %start exp_eof
 %type <exp> exp_eof
@@ -74,56 +77,74 @@
 let args_inner := ~ = separated_list(COMMA, LINK); <>
 
 
-(** Syntax for an atom *)
 
+(** Type Graph *)
+
+ty_atom_name:
+  | CONSTR { $1 }
+
+(**  proccesses separeted by comma *)
+let ty_graph := graph(ty_atom_name)
+
+(** the whole program *)
+ty_graph_eof: ty_graph EOF { $1 }
+
+
+
+(** Graph Template *)
+
+(** Syntax for an atom *)
 atom_name:
   | CONSTR { PConstr ($1) }
-  | LPAREN LAMBDA ctx DOT exp RPAREN { PLam ($3, $5) }
+  | LPAREN LAMBDA var DOT exp RPAREN { PLam ($3, $5) }
   | INT { PInt ($1) }
   | MINUS INT { PInt (- $2) }
 
 
-atom:
+atom(atom_name):
   | atom_name				            { Atom ($1, []) }	(** e.g. C *)
   | atom_name LPAREN args_inner RPAREN	{ Atom ($1, $3) }	(** e.g. C (_X1, ..., _Xm) *)
-  | LINK NECKTIE LINK                   { Atom (PConstr "><", [$1; $3]) }
 
 
-ctx:
+var:
   | VAR { ($1, []) }	(** e.g. a *)
   | VAR LBRACKET args_inner RBRACKET { ($1, $3) }	(** e.g. x [_X1, ..., _Xm] *)
 
 
 
 (**  proccesses separeted by comma *)
-graph:
-  | atom { $1 }
+graph(atom_name):
+  | atom(atom_name) { $1 }
 
-  | ctx { let (v, args) = ($1) in Ctx (v, args) }	(** e.g. x[_X1, ..., _Xm] *)
+  | var { let (v, args) = ($1) in Var (v, args) }	(** e.g. x[_X1, ..., _Xm] *)
 
-  | graph COMMA graph { Mol ($1, $3) }
+  | graph(atom_name) COMMA graph(atom_name) { Mol ($1, $3) }
 
-  | NU LINK+ DOT graph
+  | NU LINK+ DOT graph(atom_name)
     { List.fold_right (fun x graph -> Nu (x, graph)) $2 $4 }
 
-  | LPAREN graph RPAREN { $2 }
+  | LPAREN graph(atom_name) RPAREN { $2 }
 
+  | LINK NECKTIE LINK                   { Fuse ($1, $3) }
 
 
 (** the whole program *)
-graph_eof: graph EOF { $1 }
+graph_eof: graph(atom_name) EOF { $1 }
 
+
+
+(** Expression *)
 
 exp_single:
-  | LCBRACKET graph RCBRACKET { Graph ($2) }
+  | LCBRACKET graph(atom_name) RCBRACKET { Graph ($2) }
 
-  | CASE exp OF LCBRACKET graph RCBRACKET ARROW exp VBAR OTHERWISE ARROW exp
+  | CASE exp OF LCBRACKET graph(atom_name) RCBRACKET ARROW exp VBAR OTHERWISE ARROW exp
       { Case ($2, $5, $8, $12) }
 
-  | LET REC ctx ctx ctx* EQ exp IN exp
+  | LET REC var var var* EQ exp IN exp
       { LetRec ($3, $4, List.fold_right (make_lambda $3) $5 $7, $9) }
 
-  | LET ctx ctx* EQ exp IN exp
+  | LET var var* EQ exp IN exp
       { Let ($2, List.fold_right (make_lambda $2) $3 $5, $7) }
  
   | LPAREN exp RPAREN { $2 }

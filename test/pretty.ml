@@ -33,10 +33,11 @@ and string_of_p_graph = function
   | Atom (v, []) -> string_of_atom_name v
   | Atom (v, args) ->
       string_of_atom_name v ^ " (" ^ String.concat ", " args ^ ")"
-  | Ctx (x, args) -> string_of_ctx (x, args)
+  | Var (x, args) -> string_of_ctx (x, args)
   | Mol (g1, g2) ->
       "(" ^ string_of_p_graph g1 ^ ", " ^ string_of_p_graph g2 ^ ")"
   | Nu (x, g) -> "nu " ^ x ^ string_of_nus g
+  | Fuse (x, y) -> x ^ " >< " ^ y
 
 and string_of_nus = function
   | Nu (x, g) -> " " ^ x ^ string_of_nus g

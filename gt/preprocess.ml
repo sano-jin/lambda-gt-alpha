@@ -6,7 +6,7 @@ let get_link link_env x =
   match List.assoc_opt x link_env with None -> FreeLink x | Some y -> y
 
 (** Alpha convert local link names to numbers and flattern graph to a list of
-    atoms.
+    atoms. Currently, fusions are transformed to atoms with names "><".
 
     @param i the seed for the indentifier of local links. *)
 
@@ -21,7 +21,7 @@ let rec alpha i link_env = function
       in
       let links = List.map (get_link link_env) args in
       (i, ([ (v, links) ], []))
-  | Ctx (x, args) ->
+  | Var (x, args) ->
       let links = List.map (get_link link_env) args in
       (i, ([], [ (x, links) ]))
   | Mol (g1, g2) ->
@@ -29,6 +29,9 @@ let rec alpha i link_env = function
       let i, (atoms2, gctxs2) = alpha i link_env g2 in
       (i, (atoms1 @ atoms2, gctxs1 @ gctxs2))
   | Nu (x, g) -> alpha (succ i) ((x, LocalLink i) :: link_env) g
+  | Fuse (x, y) ->
+      let links = List.map (get_link link_env) [ x; y ] in
+      (i, ([], [ ("><", links) ]))
 
 let alpha100 = alpha 100 []
 

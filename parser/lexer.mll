@@ -20,7 +20,7 @@ rule token = parse
   | "><"		{ NECKTIE }
   | "case"      { CASE }
   | "of"        { OF }
-  | "->"        { ARROW}
+  | "->"        { ARROW }
   | "\\"        { LAMBDA }
   | "otherwise" { OTHERWISE }
   | "|"         { VBAR }
