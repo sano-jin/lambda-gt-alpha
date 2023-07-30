@@ -21,7 +21,18 @@ preprocessing したグラフと，
 - グラフの中では全て局所リンクということにして，
   外付けで局所リンクと自由リンク $(n \geq 0)$ の対応を持たせるのが良さそう？
   - $graph = atoms \times (FL \rightarrow LL)$
+  - 自由リンクで置き換えられるものも局所リンクを経由しているので，
+    局所リンクの数が必要な時は局所リンクの数から自由リンクの数を引いた値を用いる．
 - int は type variable として扱う．
+- production rule の適用：
+  - 基本的には link substitution をして concat するだけ．
+  - link substitution の方針：
+    1. `x[Xs] -> RHS` とする．
+    2. `Xs` から `RHS` の `link_env` への mapping を作っておく．
+    3. 代入対象のグラフの variable が `y[Ys]` であるとき，
+       `Xs -> Ys` の mapping を作る．
+       ここで，`Xs` は全て free links, `Ys` は全て local links (link ids) である．
+    4. `Xs -> Ys` の mapping で `RHS` の `link_env` を substitute する．
 
 ### Port Graph
 

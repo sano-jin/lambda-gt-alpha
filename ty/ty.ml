@@ -8,8 +8,8 @@ let get_link (i, link_env) x =
   | None -> ((succ i, link_env @ [ (x, i) ]), i)
   | Some y -> ((i, link_env), y)
 
-(** Alpha convert local link names to numbers and flattern graph to a list of
-    atoms.
+(** Alpha convert local link names to numbers and flattern the graph (in a term)
+    to a pair of a list of atoms and a list of variables.
 
     @param i the seed for the indentifier of local links (link ids).
     @param link_env the mapping from bounded link names to link ids .
@@ -34,12 +34,28 @@ let rec alpha ((((i, link_env) as i_link_env), fusion) as env) = function
       let i_link_env, y = get_link i_link_env y in
       ((i_link_env, (x, y) :: fusion), ([], []))
 
-(** Fusion を行う．*)
-let fuse_links (((i, link_env), fusion), graph) =
+(** Substitute a link [x] with a link [y] in [link_env] and a graph ([atoms] and
+    [vars]). *)
+let subst_links (link_env, (atoms, vars)) (x, y) =
   let subst x y z = if z = x then y else z in
   let subst_links = List.map <. second <. List.map <.. subst in
-  let helper (link_env, (atoms, vars)) (x, y) =
-    ( ListExtra.update_assoc (subst x y) x link_env,
-      (subst_links x y atoms, subst_links x y vars) )
-  in
-  (i, List.fold_left helper (link_env, graph) fusion)
+  ( List.map (second @@ subst x y) link_env,
+    (subst_links x y atoms, subst_links x y vars) )
+
+(** Fusion を行う．*)
+let fuse_links fusion link_env graph =
+  List.fold_left subst_links (link_env, graph) fusion
+
+(** Preprocess graph. *)
+let preprocess graph =
+  let ((i, link_env), fusion), graph = alpha ((0, []), []) graph in
+  let link_env, graph = fuse_links fusion link_env graph in
+  ((i, link_env), graph)
+
+(** Number of local links. *)
+let num_local_links (link_env, (atoms, vars)) =
+  List.length @@ List.sort_uniq compare @@ List.map snd link_env
+  @ List.concat_map snd atoms @ List.concat_map snd vars
+
+(** Apply a production rule. *)
+let app_prod graph (_var, _rhs) = graph
