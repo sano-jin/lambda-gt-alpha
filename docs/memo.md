@@ -12,7 +12,9 @@ preprocessing したグラフと，
 
 とりあえずは旧来のコードとは別に作る？
 
-- そもそも型だし．
+- gt (graph transformation) の実装は polymorphic に出来そうだが，
+  どのみち free link と fusion の扱い方を変更する予定なので，
+  ひとまず別に実装する．
 
 グラフの定義．
 

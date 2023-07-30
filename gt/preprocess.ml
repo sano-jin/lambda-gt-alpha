@@ -31,7 +31,7 @@ let rec alpha i link_env = function
   | Nu (x, g) -> alpha (succ i) ((x, LocalLink i) :: link_env) g
   | Fuse (x, y) ->
       let links = List.map (get_link link_env) [ x; y ] in
-      (i, ([], [ ("><", links) ]))
+      (i, ([ (Constr "><", links) ], []))
 
 let alpha100 = alpha 100 []
 

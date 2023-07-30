@@ -190,6 +190,12 @@ let rec update_list f x1 = function
         let+ t, result = update_list f x1 t in
         ((x2, v2) :: t, result)
 
+(** 連想リストの leftmost binding of x を 更新する．*)
+let rec update_assoc f x = function
+  | [] -> []
+  | (x', v) :: t ->
+      if x = x' then (x, f v) :: t else (x, v) :: update_assoc f x t
+
 (** 以下試作であまり価値がなさそう *)
 
 (** リストのリストをそれぞれ head と tail に分けてそれぞれリストにしたタプルを返す． transpose のための補助関数．

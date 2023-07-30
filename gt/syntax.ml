@@ -18,17 +18,17 @@ type atom_name =
 
 and atom = atom_name * link list
 
-and ctx = string * link list
+and var = string * link list
 (** Graph context. *)
 
 (* and graph = atom list * free_links *)
 and graph = atom list
 (** graph as data. *)
 
-and theta = (ctx * graph) list
+and theta = (var * graph) list
 (** Graph substitution, i.e., environment. *)
 
-type graph_template = atom list * ctx list
+type graph_template = atom list * var list
 (** graph on the left/right-hand side of rules *)
 
 let string_of_atom_name = function
