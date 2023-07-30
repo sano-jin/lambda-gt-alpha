@@ -51,7 +51,9 @@ Evaluator
 - 従って，host graph の free fusion が graph template の free fusion の subset (finer) であることを確認すれば良い．
   - マッチングの際に，非単射的であれば，quotient set を update する?
 
-1. Check that the set of free link names of the host graph and the graph template are the same.
-2. Check that the free fusion of the host graph is a finer quotient set than the free fusion of the graph template.
+1. Check that the set of free link names of the host graph and
+   the graph template are the same.
+2. Check that the free fusion of the host graph is a finer quotient set
+   than the free fusion of the graph template.
 3. Match atoms updating `link_env`.
    - Free
