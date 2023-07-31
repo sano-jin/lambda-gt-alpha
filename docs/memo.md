@@ -57,16 +57,7 @@ preprocessing したグラフと，
    $Y_i \mapsto {id}_i$
    で fusion を行う．
 
-   - つまり，$Y_i$ を ${id}_i$ で substitute する．
-     やっぱり，これだけだとダメかも．
-   - 商集合を作って，それで潰してやる必要がある．
-     - $Y_i \mapsto {id}_i$
-     - $R$ の前提条件より，$Y_i$ と ${id}_j$ は互いに素．
-     - 従って $Y_i$ と ${id}_j$ それぞれでまとめてやれば良い．
-     - まず $Y_i$ でまとめる．
-       - $Y_j \mapsto \overrightarrow{id}$
-         を得る．
-     - 次に
+   - fusion の実装は graph の preprocess を行う際に用いるので，既に済んでいる．
 
 ### Port Graph
 

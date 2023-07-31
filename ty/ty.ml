@@ -34,22 +34,27 @@ let rec alpha ((((i, link_env) as i_link_env), fusion) as env) = function
       let i_link_env, y = get_link i_link_env y in
       ((i_link_env, (x, y) :: fusion), ([], []))
 
+let subst (x, y) z = if z = x then y else z
+
 (** Substitute a link [x] with a link [y] in [link_env] and a graph ([atoms] and
     [vars]). *)
-let subst_links (link_env, (atoms, vars)) (x, y) =
-  let subst x y z = if z = x then y else z in
-  let subst_links = List.map <. second <. List.map <.. subst in
-  ( List.map (second @@ subst x y) link_env,
-    (subst_links x y atoms, subst_links x y vars) )
+let subst_links (link_env, (atoms, vars)) xy =
+  let subst_links = List.map <. second <. List.map <. subst in
+  ( List.map (second @@ subst xy) link_env,
+    (subst_links xy atoms, subst_links xy vars) )
 
-(** Fusion を行う． todo: これ本当は商集合を作ってからじゃないとたぶんダメ． *)
-let fuse_links fusion link_env graph =
-  List.fold_left subst_links (link_env, graph) fusion
+(** Fusion を行う．残りの fusions に対しても substitution を行いながら [link_env] と [graph] のリンクを
+    substitute していく．*)
+let rec fuse_links link_env_graph = function
+  | [] -> link_env_graph
+  | xy :: fusions ->
+      fuse_links (subst_links link_env_graph xy)
+      @@ List.map (fun (x, y) -> (subst xy x, subst xy y)) fusions
 
 (** Preprocess graph. *)
 let preprocess graph =
   let ((i, link_env), fusion), graph = alpha ((0, []), []) graph in
-  let link_env, graph = fuse_links fusion link_env graph in
+  let link_env, graph = fuse_links (link_env, graph) fusion in
   ((i, link_env), graph)
 
 (** Number of local links. *)
@@ -59,14 +64,3 @@ let num_local_links (link_env, (atoms, vars)) =
 
 (** Apply a production rule. *)
 let app_prod graph (_var, _rhs) = graph
-
-(** Make a quotient set. *)
-let make_eqrel rel =
-  let rec merge (x, y) ss =
-    let xs = List.find (List.mem x) ss in
-    let ys = List.find (List.mem y) ss in
-    List.sort_uniq compare (xs @ ys)
-    :: List.filter (fun zs -> zs <> xs && zs <> ys) ss
-  in
-  List.fold_right merge rel @@ List.sort_uniq compare
-  @@ List.concat_map (fun (x, y) -> [ [ x ]; [ y ] ]) rel

@@ -231,3 +231,14 @@ let multiset l =
   in
   let helper multiset x = update succ x (x, 1) multiset in
   List.fold_left helper [] l
+
+(** Make a quotient set. *)
+let make_eqrel rel =
+  let merge (x, y) ss =
+    let xs = List.find (List.mem x) ss in
+    let ys = List.find (List.mem y) ss in
+    List.sort_uniq compare (xs @ ys)
+    :: List.filter (fun zs -> zs <> xs && zs <> ys) ss
+  in
+  List.fold_right merge rel @@ List.sort_uniq compare
+  @@ List.concat_map (fun (x, y) -> [ [ x ]; [ y ] ]) rel
