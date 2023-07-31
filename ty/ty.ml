@@ -42,7 +42,7 @@ let subst_links (link_env, (atoms, vars)) (x, y) =
   ( List.map (second @@ subst x y) link_env,
     (subst_links x y atoms, subst_links x y vars) )
 
-(** Fusion を行う．*)
+(** Fusion を行う． todo: これ本当は商集合を作ってからじゃないとたぶんダメ． *)
 let fuse_links fusion link_env graph =
   List.fold_left subst_links (link_env, graph) fusion
 
