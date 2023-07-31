@@ -32,34 +32,41 @@ preprocessing したグラフと，
 1. Production rule を
    $x[\overrightarrow{X}] \longrightarrow R$
    とする．
-   1. ここで，$\overrightarrow{X} = fn(R)$ である．
+   1. ここで $\overrightarrow{X} = fn(R)$ である．
    2. $R$ の link_env は $X_i \mapsto {id}_i$
    3. $\overrightarrow{X}$ は全て free links である．
    4. $R$ の local links
       (自由リンク $\overrightarrow{X}$ に接続されている局所リンク $\overrightarrow{id}$ を含む)
       は，
-      graph substitution 先のグラフの local links とは干渉しないように unique にしておく．
-2. 代入対象のグラフの variable が $y[\overrightarrow{Y}]$ であるとする．
-   $\overrightarrow{Y}$ は全て local links (link ids) である．
+      代入対象のグラフの local links とは干渉しないように unique にしておく．
+2. 代入対象のグラフ中の variable が $y[\overrightarrow{Y}]$ であるとする．
+   1. $\overrightarrow{Y}$ は全て local links (link ids) である．
 
 アルゴリズム．
 
 1. まず単に $R$ を concat する．
 
-   - 前提として，$R$ の local link ids は unique にしておいてある．
+   - 前提として $R$ の local link ids は unique にしておいてある．
 
    - 従って，concat 先のグラフのリンクと干渉しない．
 
-2. $X_i \mapsto Y_i$ の mapping を作る．
-
-3. $R$ の link_env の $X_i$ を $Y_i$ で置き換えて，
+2. $R$ の link_env ($X_i \mapsto {id}_i$) の $X_i$ を $Y_i$ で置き換えて，
    $Y_i \mapsto {id}_i$ を作る．
 
-4. concat 後のグラフ全体に対して，
+3. concat 後のグラフ全体に対して，
    $Y_i \mapsto {id}_i$
    で fusion を行う．
 
    - つまり，$Y_i$ を ${id}_i$ で substitute する．
+     やっぱり，これだけだとダメかも．
+   - 商集合を作って，それで潰してやる必要がある．
+     - $Y_i \mapsto {id}_i$
+     - $R$ の前提条件より，$Y_i$ と ${id}_j$ は互いに素．
+     - 従って $Y_i$ と ${id}_j$ それぞれでまとめてやれば良い．
+     - まず $Y_i$ でまとめる．
+       - $Y_j \mapsto \overrightarrow{id}$
+         を得る．
+     - 次に
 
 ### Port Graph
 

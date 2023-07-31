@@ -59,3 +59,14 @@ let num_local_links (link_env, (atoms, vars)) =
 
 (** Apply a production rule. *)
 let app_prod graph (_var, _rhs) = graph
+
+(** Make a quotient set. *)
+let make_eqrel rel =
+  let rec merge (x, y) ss =
+    let xs = List.find (List.mem x) ss in
+    let ys = List.find (List.mem y) ss in
+    List.sort_uniq compare (xs @ ys)
+    :: List.filter (fun zs -> zs <> xs && zs <> ys) ss
+  in
+  List.fold_right merge rel @@ List.sort_uniq compare
+  @@ List.concat_map (fun (x, y) -> [ [ x ]; [ y ] ]) rel
