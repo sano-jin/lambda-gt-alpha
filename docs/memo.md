@@ -16,23 +16,50 @@ preprocessing したグラフと，
   どのみち free link と fusion の扱い方を変更する予定なので，
   ひとまず別に実装する．
 
-グラフの定義．
+### グラフの定義．
 
 - グラフの中では全て局所リンクということにして，
   外付けで局所リンクと自由リンク $(n \geq 0)$ の対応を持たせるのが良さそう？
   - $graph = atoms \times (FL \rightarrow LL)$
   - 自由リンクで置き換えられるものも局所リンクを経由しているので，
     局所リンクの数が必要な時は局所リンクの数から自由リンクの数を引いた値を用いる．
-- int は type variable として扱う．
-- production rule の適用：
-  - 基本的には link substitution をして concat するだけ．
-  - link substitution の方針：
-    1. `x[Xs] -> RHS` とする．
-    2. `Xs` から `RHS` の `link_env` への mapping を作っておく．
-    3. 代入対象のグラフの variable が `y[Ys]` であるとき，
-       `Xs -> Ys` の mapping を作る．
-       ここで，`Xs` は全て free links, `Ys` は全て local links (link ids) である．
-    4. `Xs -> Ys` の mapping で `RHS` の `link_env` を substitute する．
+- int などは type variable として扱う．
+
+### Production rule の適用のアルゴリズム．
+
+前提条件：
+
+1. Production rule を
+   $x[\overrightarrow{X}] \longrightarrow R$
+   とする．
+   1. ここで，$\overrightarrow{X} = fn(R)$ である．
+   2. $R$ の link_env は $X_i \mapsto {id}_i$
+   3. $\overrightarrow{X}$ は全て free links である．
+   4. $R$ の local links
+      (自由リンク $\overrightarrow{X}$ に接続されている局所リンク $\overrightarrow{id}$ を含む)
+      は，
+      graph substitution 先のグラフの local links とは干渉しないように unique にしておく．
+2. 代入対象のグラフの variable が $y[\overrightarrow{Y}]$ であるとする．
+   $\overrightarrow{Y}$ は全て local links (link ids) である．
+
+アルゴリズム．
+
+1. まず単に $R$ を concat する．
+
+   - 前提として，$R$ の local link ids は unique にしておいてある．
+
+   - 従って，concat 先のグラフのリンクと干渉しない．
+
+2. $X_i \mapsto Y_i$ の mapping を作る．
+
+3. $R$ の link_env の $X_i$ を $Y_i$ で置き換えて，
+   $Y_i \mapsto {id}_i$ を作る．
+
+4. concat 後のグラフ全体に対して，
+   $Y_i \mapsto {id}_i$
+   で fusion を行う．
+
+   - つまり，$Y_i$ を ${id}_i$ で substitute する．
 
 ### Port Graph
 
