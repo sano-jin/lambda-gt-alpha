@@ -44,16 +44,19 @@ preprocessing したグラフと，
 
 アルゴリズム．
 
-1. まず単に $R$ を concat する．
+1. 前提として $R$ の local link ids は unique にしておいてある．
 
-   - 前提として $R$ の local link ids は unique にしておいてある．
+2. まず単に $R$ を concat する．
 
-   - 従って，concat 先のグラフのリンクと干渉しない．
+   - 前提より，concat 先のグラフのリンクと干渉しない．
 
-2. $R$ の link_env ($X_i \mapsto {id}_i$) の $X_i$ を $Y_i$ で置き換えて，
+3. $X_i \mapsto Y_i$ を作る．
+
+4. $X_i \mapsto Y_i$ を用いて
+   $R$ の link_env ($X_i \mapsto {id}_i$) の $X_i$ を $Y_i$ で置き換えて，
    $Y_i \mapsto {id}_i$ を作る．
 
-3. concat 後のグラフ全体に対して，
+5. concat 後のグラフ全体に対して，
    $Y_i \mapsto {id}_i$
    で fusion を行う．
 

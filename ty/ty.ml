@@ -52,8 +52,8 @@ let rec fuse_links link_env_graph = function
       @@ List.map (fun (x, y) -> (subst xy x, subst xy y)) fusions
 
 (** Preprocess graph. *)
-let preprocess graph =
-  let ((i, link_env), fusion), graph = alpha ((0, []), []) graph in
+let preprocess graph i =
+  let ((i, link_env), fusion), graph = alpha ((i, []), []) graph in
   let link_env, graph = fuse_links (link_env, graph) fusion in
   ((i, link_env), graph)
 
@@ -62,5 +62,14 @@ let num_local_links (link_env, (atoms, vars)) =
   List.length @@ List.sort_uniq compare @@ List.map snd link_env
   @ List.concat_map snd atoms @ List.concat_map snd vars
 
-(** Apply a production rule. *)
-let app_prod graph (_var, _rhs) = graph
+let concat_graphs (atoms, vars) (atoms', vars') = (atoms @ atoms', vars @ vars')
+
+(** Apply a production rule.
+
+    @param local_link_i Fresh な local link の id を seed として与える． *)
+let app_prod (link_env, graph) var' (var, rhs) local_link_i =
+  let (local_link_i, rhs_link_env), rhs_graph = preprocess rhs local_link_i in
+  let link_env_graph = (link_env, concat_graphs rhs_graph graph) in
+  let x2y = List.combine (snd var') (snd var) in
+  let rhs_link_env' = List.map (first @@ flip List.assoc x2y) rhs_link_env in
+  (local_link_i, fuse_links link_env_graph rhs_link_env')
