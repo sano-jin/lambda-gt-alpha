@@ -45,22 +45,27 @@ preprocessing したグラフと，
 アルゴリズム．
 
 1. 前提として $R$ の local link ids は unique にしておいてある．
-
 2. まず単に $R$ を concat する．
-
    - 前提より，concat 先のグラフのリンクと干渉しない．
-
 3. $X_i \mapsto Y_i$ を作る．
-
-4. $X_i \mapsto Y_i$ を用いて
-   $R$ の link_env ($X_i \mapsto {id}_i$) の $X_i$ を $Y_i$ で置き換えて，
+4. $X_i \mapsto Y_i$ を用いて $R$ の link_env ($X_i \mapsto {id}_i$) の $X_i$ を $Y_i$ で置き換えて，
    $Y_i \mapsto {id}_i$ を作る．
-
-5. concat 後のグラフ全体に対して，
-   $Y_i \mapsto {id}_i$
+5. concat 後のグラフ全体に対して， $Y_i \mapsto {id}_i$
    で fusion を行う．
-
    - fusion の実装は graph の preprocess を行う際に用いるので，既に済んでいる．
+
+```ocaml
+
+(** [preprocess graph (atom_i, link_i)] preprocesses graph assigning the ids as
+    the local links starting from the seed [i]. *)
+let preprocess graph (atom_i, link_i) =
+  let ((link_i, link_env), fusion), graph =
+    transform ((link_i, []), []) graph
+  in
+  let atom_i, graph = assign_ids graph atom_i in
+  let link_env, graph = fuse_links (link_env, graph) fusion in
+  ((atom_i, link_i), (link_env, graph))
+```
 
 ### Port Graph
 
