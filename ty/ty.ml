@@ -64,7 +64,15 @@ let num_local_links (link_env, (atoms, vars)) =
 
 let concat_graphs (atoms, vars) (atoms', vars') = (atoms @ atoms', vars @ vars')
 
-(** Apply a production rule.
+(** Apply a production rule. [app_prod target var' prod local_link_i] applies
+    the production rule [prod] substituting the variable [var'] that existed in
+    the target graph [target].
+
+    - The variable [var'] must have the same functor (the same and the same
+      arity) that the variable on the left-hand side of the production rule
+      [prod] has.
+    - The variable [var'] in the target graph [target] must be removed before
+      using this function.
 
     @param local_link_i Fresh な local link の id を seed として与える． *)
 let app_prod (link_env, graph) var' (var, rhs) local_link_i =
