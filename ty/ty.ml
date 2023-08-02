@@ -120,19 +120,65 @@ let app_prod (link_env, graph) ivar' (var, rhs) (atom_i, local_link_i) =
 let size_of_graph ((link_env, (atoms, vars)) as g) =
   let num_links = List.length (local_links_of g) - List.length link_env in
   let num_atoms_vars = List.length atoms + List.length vars in
-  (num_atoms_vars, num_links)
+  num_atoms_vars + num_links
 
 let functor_of (p, xs) = (p, List.length xs)
 let eq_funct pxs qys = functor_of pxs = functor_of qys
 
-(** 適用可能なルール． *)
-let applicable_rules var prods = List.filter (eq_funct var <. fst) prods
+type state_id = int * int
+(** [state_id] is a pair of the id of a rule and the id of a non-terminal
+    symbol. *)
 
-(* let apply_prod2 ((_, var) as ivar) target prods var_i local_link_i = let+
-   prod = List.find_opt (eq_funct var <. fst) prods in let var_i, prod = let
-   lhs_var, (rhs_link_env, (rhs_atoms, rhs_vars)) = prod in let rhs_vars =
-   List.mapi (fun i var -> (i + var_i, var)) rhs_vars in ( List.length rhs_vars
-   + var_i, (lhs_var, (rhs_link_env, (rhs_atoms, rhs_vars))) ) in
+module SIDs = Set.Make (struct
+  type t = state_id
 
-   let target = (second @@ second @@ List.filter @@ ( <> ) ivar) target in
-   (var_i, target, prod) *)
+  let compare = compare
+end)
+
+module SIDss = Set.Make (SIDs)
+
+(** 非終端記号にルールの適用を試みる．
+
+    [app_prod_opt max_size var sids state prod] applies the production rule
+    [prod] to the variable [var] in the state [state] using the state ids [sids]
+    if it does not exceed the size [max_size]. *)
+let app_var_prod_opt max_size var sids (sid, (atom_local_i, graph))
+    (prod_i, prod) =
+  let current_size = size_of_graph graph + (size_of_graph @@ snd prod) - 1 in
+  let sid = SIDs.add (fst var, prod_i) sid in
+  if
+    eq_funct (snd var) (fst prod)
+    && max_size >= current_size
+    && not (SIDss.mem sid sids)
+  then Some (sid, app_prod graph var prod atom_local_i)
+  else None
+
+let rec app_var_prods next_states max_size sids state var = function
+  | [] -> (sids, next_states)
+  | prod :: prods ->
+      let sids, next_states =
+        match app_var_prod_opt max_size var sids state prod with
+        | None -> (sids, next_states)
+        | Some ((sid, _) as next_state) ->
+            (SIDss.add sid sids, next_state :: next_states)
+      in
+      app_var_prods next_states max_size sids state var prods
+
+let app_var_prods max_size state prods sids var =
+  app_var_prods [] max_size sids state var prods
+
+let app_vars_prods max_size sids state prods vars =
+  List.fold_left_map (app_var_prods max_size state prods) sids vars
+
+(** [state = (sid, (atom_local_i, (link_env, (atoms, vars))))] *)
+let vars_of_state (_, (_, (_, (_, vars)))) = vars
+
+let gen_1step max_size prods sids state =
+  let vars = vars_of_state state in
+  let sids, next_stateses = app_vars_prods max_size sids state prods vars in
+  let next_states = List.concat next_stateses in
+  (sids, next_states)
+
+let rec gen max_size prods (sids, states) state =
+  let sids, next_states = gen_1step max_size prods sids state in
+  List.fold_left (gen max_size prods) (sids, next_states @ states) next_states

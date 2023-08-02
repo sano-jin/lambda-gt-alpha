@@ -54,18 +54,15 @@ preprocessing したグラフと，
    で fusion を行う．
    - fusion の実装は graph の preprocess を行う際に用いるので，既に済んでいる．
 
-```ocaml
+### Language generation の方針
 
-(** [preprocess graph (atom_i, link_i)] preprocesses graph assigning the ids as
-    the local links starting from the seed [i]. *)
-let preprocess graph (atom_i, link_i) =
-  let ((link_i, link_env), fusion), graph =
-    transform ((link_i, []), []) graph
-  in
-  let atom_i, graph = assign_ids graph atom_i in
-  let link_env, graph = fuse_links (link_env, graph) fusion in
-  ((atom_i, link_i), (link_env, graph))
-```
+POR したい．
+
+- ルールにそれぞれ id を振る．
+- 生成中の語と一緒に `(var_id * rule_id) set` を持っておいて，
+  どの variable にどのルールを適用したかの set で比較する．
+  - この集合が等しい時は同じ状態なので，追加しない．
+  - 導出木の枝をずらすというので証明できそうな気がしてきた．
 
 ### Port Graph
 
