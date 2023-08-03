@@ -7,8 +7,10 @@ type link_env = (string * int) list
 type graph = link_env * (atom list * atom list)
 type prod = int * (var * graph)
 
-(** [get_link (i, link_env) x ] gets the link name of [x] according to the given
-    link environment [link_env]. 自由リンクであった場合は末尾に追加していく． *)
+(** [get_link (i, link_env) x ] gets the corresponding local link id of [x]
+    according to the given link environment [link_env]. If the given link [x] is
+    a free link, then append it to the end combining a newly created fresh local
+    link id so that we can get the loca link id in the next time. *)
 let get_link (i, link_env) x =
   match List.assoc_opt x link_env with
   | None -> ((succ i, link_env @ [ (x, i) ]), i)
@@ -21,25 +23,24 @@ let get_link (i, link_env) x =
     @param i the seed for the indentifier of local links (link ids).
     @param link_env the mapping from bounded link names to link ids .
     @param fusion fusion of link ids. *)
-let rec transform ((((i, link_env) as i_link_env), fusion) as env) = function
-  | Zero -> (env, ([], []))
+let rec transform ((i, link_env) as env) = function
+  | Zero -> (env, [], ([], []))
   | Atom (v, args) ->
-      let i_link_env, links = List.fold_left_map get_link i_link_env args in
-      ((i_link_env, fusion), ([ (v, links) ], []))
+      let env, links = List.fold_left_map get_link env args in
+      (env, [], ([ (v, links) ], []))
   | Var (x, args) ->
-      let i_link_env, links = List.fold_left_map get_link i_link_env args in
-      ((i_link_env, fusion), ([], [ (x, links) ]))
+      let i_link_env, links = List.fold_left_map get_link env args in
+      (i_link_env, [], ([], [ (x, links) ]))
   | Mol (g1, g2) ->
-      let env, (atoms1, gvars1) = transform env g1 in
-      let env, (atoms2, gvars2) = transform env g2 in
-      (env, (atoms1 @ atoms2, gvars1 @ gvars2))
+      let env, fusions1, (atoms1, gvars1) = transform env g1 in
+      let env, fusions2, (atoms2, gvars2) = transform env g2 in
+      (env, fusions1 @ fusions2, (atoms1 @ atoms2, gvars1 @ gvars2))
   | Nu (x, g) ->
-      (first <. first <. second) List.tl
-      @@ transform ((succ i, (x, i) :: link_env), fusion) g
+      (first3 <. second) List.tl @@ transform (succ i, (x, i) :: link_env) g
   | Fuse (x, y) ->
-      let i_link_env, x = get_link i_link_env x in
-      let i_link_env, y = get_link i_link_env y in
-      (((i_link_env : int * link_env), (x, y) :: fusion), ([], []))
+      let env, x = get_link env x in
+      let env, y = get_link env y in
+      (env, [ (x, y) ], ([], []))
 
 (** [assign_ids atom_i graph] assign unique ids starting from [atom_i] to atoms
     and variables in the graph [graph]. *)
@@ -71,8 +72,8 @@ let rec fuse_links (link_env_graph : (string * int) list * _) = function
 (** [preprocess (atom_i, link_i) graph] preprocesses graph assigning the ids as
     the local links starting from the seed [i]. *)
 let preprocess (atom_i, link_i) graph =
-  let ((link_i, (link_env : (string * int) list)), fusion), graph =
-    transform ((link_i, []), []) graph
+  let (link_i, (link_env : (string * int) list)), fusion, graph =
+    transform (link_i, []) graph
   in
   let atom_i, graph = assign_ids atom_i graph in
   let link_env, graph = fuse_links (link_env, graph) fusion in
