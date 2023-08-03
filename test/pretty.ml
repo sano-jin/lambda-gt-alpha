@@ -26,7 +26,7 @@ let rec string_of_exp = function
 and string_of_atom_name = function
   | PConstr name -> name
   | PInt i -> string_of_int i
-  | PLam (ctx, e) -> "<\\" ^ string_of_ctx ctx ^ ". " ^ string_of_exp e ^ ">"
+  | PLam (ctx, e) -> "(\\" ^ string_of_ctx ctx ^ ". " ^ string_of_exp e ^ ")"
 
 and string_of_p_graph = function
   | Zero -> "0"

@@ -233,4 +233,4 @@ let gengen (graph, var, prods) =
   let max_size = size_of_graph graph * 2 in
   gen max_size prods (SIDss.empty, []) (SIDs.empty, (env, initial_graph))
 
-let gen_parse str = gengen @@ Parse.parse_ty str
+let gen_parse = gengen <. Parse.parse_ty

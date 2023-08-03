@@ -8,15 +8,15 @@ let test_eval exp =
 let test () =
   test_eval "{nu _Z. (A (_Z, _X), B (_Y, _Z))}";
 
-  test_eval "{<\\x.{x}>}";
+  test_eval "{(\\x.{x})}";
 
-  test_eval @@ "{<\\y[_Y, _X]. {nu _Z. (x[_Z, _X], y[_Y, _Z])}>}";
-
-  test_eval
-  @@ "{<\\x[_Y, _X]. {<\\y[_Y, _X]. {nu _Z. (x[_Z, _X], y[_Y, _Z])}>}>}";
+  test_eval @@ "{(\\y[_Y, _X]. {nu _Z. (x[_Z, _X], y[_Y, _Z])})}";
 
   test_eval
-  @@ "{<\\x[_Y, _X]. {<\\y[_Y, _X]. {nu _Z. (x[_Z, _X], y[_Y, _Z])}>}>}"
+  @@ "{(\\x[_Y, _X]. {(\\y[_Y, _X]. {nu _Z. (x[_Z, _X], y[_Y, _Z])})})}";
+
+  test_eval
+  @@ "{(\\x[_Y, _X]. {(\\y[_Y, _X]. {nu _Z. (x[_Z, _X], y[_Y, _Z])})})}"
   ^ " {nu _X1. (Cons (_X1, _Y, _X), Zero1 (_X1))}"
   ^ " {nu _X1. (Cons (_X1, _Y, _X), Zero2 (_X1))} ";
 

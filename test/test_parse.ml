@@ -43,7 +43,7 @@ let test () =
     "case {nu _Z. (x [_Z, _X], y [_Y, _Z])} of {nu _Z. (x [_Z, _X], y [_Y, \
      _Z])} -> {A ()} | otherwise -> {B ()}";
 
-  test_exp "{<\\x.{x}>}";
+  test_exp "{(\\x.{x})}";
 
   test_exp "{1}";
 
@@ -51,13 +51,13 @@ let test () =
 
   test_exp "{1(_X)} + {2(_X)}";
 
-  test_exp @@ "{<\\y[_Y, _X]. {nu _Z. (x[_Z, _X], y[_Y, _Z])}>}";
+  test_exp @@ "{(\\y[_Y, _X]. {nu _Z. (x[_Z, _X], y[_Y, _Z])})}";
 
   test_exp
-  @@ "{<\\x[_Y, _X]. {<\\y[_Y, _X]. {nu _Z. (x[_Z, _X], y[_Y, _Z])}>}>}";
+  @@ "{(\\x[_Y, _X]. {(\\y[_Y, _X]. {nu _Z. (x[_Z, _X], y[_Y, _Z])})})}";
 
   test_exp
-  @@ "{<\\x[_Y, _X]. {<\\y[_Y, _X]. {nu _Z. (x[_Z, _X], y[_Y, _Z])}>}>}"
+  @@ "{(\\x[_Y, _X]. {(\\y[_Y, _X]. {nu _Z. (x[_Z, _X], y[_Y, _Z])})})}"
   ^ " {Cons (_X1, _Y, _X), Zero (_X1)}" ^ " {Cons (_X1, _Y, _X), Zero (_X1)} ";
 
   test_exp @@ "let x[_X] = {Val (_X)} in {x[_Y]}";

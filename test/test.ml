@@ -26,4 +26,4 @@ let () =
   run_test "matching" Test_matching.test;
   run_test "match_atoms" Test_match_atoms.test;
   run_test "synthesis" Test_synthesis.test;
-  run_test "eval" Test_eval.test;
+  run_test "eval" Test_eval.test
