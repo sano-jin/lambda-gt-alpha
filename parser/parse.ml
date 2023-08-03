@@ -4,6 +4,9 @@ open Util
 include Syntax
 
 (** @return AST of type graph *)
+let parse_ty = Parser.ty_eof Lexer.token <. Lexing.from_string
+
+(** @return AST of type graph *)
 let parse_ty_graph = Parser.ty_graph_eof Lexer.token <. Lexing.from_string
 
 (** @return AST of graph *)

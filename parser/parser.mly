@@ -33,6 +33,7 @@
 %token PLUS           (**  "+" *)
 %token MINUS          (**  "-" *)
 %token TIMES          (**  "*" *)
+%token COLON          (**  ":" *)
 
 (** Parentheses *)
 %token LPAREN         (**  '(' *)
@@ -58,6 +59,10 @@
 %left      TIMES
 %nonassoc  LET IN CASE ARROW
 %nonassoc  LPAREN LCBRACKET
+
+
+%start ty_eof
+%type <ty> ty_eof
 
 
 %start ty_graph_eof
@@ -88,6 +93,15 @@ let ty_graph := graph(ty_atom_name)
 
 (** the whole program *)
 ty_graph_eof: ty_graph EOF { $1 }
+
+(**  proccesses separeted by comma *)
+ty_rule:
+  | var ARROW graph(ty_atom_name) { ($1, $3) }
+
+(** arguments of an atom separated by comma without parentheses *)
+let ty_rules := ~ = separated_list(COMMA, ty_rule); <>
+
+ty_eof: graph(ty_atom_name) COLON var LCBRACKET ty_rules RCBRACKET EOF { ($1, $3, $5) }
 
 
 

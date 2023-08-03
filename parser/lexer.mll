@@ -31,6 +31,7 @@ rule token = parse
   | "+"         { PLUS }
   | "-"         { MINUS }
   | "*"         { TIMES }
+  | ":"         { COLON }
 
   (** Parentheses *)
   | '('			{ LPAREN }

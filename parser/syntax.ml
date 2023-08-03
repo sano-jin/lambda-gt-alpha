@@ -17,6 +17,7 @@ type ty_graph = string graph
 (** type graph (RHS of production rules). *)
 
 type ty_rule = var * ty_graph
+type ty = ty_graph * var * ty_rule list
 
 (** Syntax of the language. *)
 

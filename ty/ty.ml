@@ -1,6 +1,11 @@
 open Parse
 open Util
-open OptionExtra
+
+type atom = int * (string * int list)
+type var = string * string list
+type link_env = (string * int) list
+type graph = link_env * (atom list * atom list)
+type prod = int * (var * graph)
 
 (** [get_link (i, link_env) x ] gets the link name of [x] according to the given
     link environment [link_env]. 自由リンクであった場合は末尾に追加していく． *)
@@ -34,7 +39,7 @@ let rec transform ((((i, link_env) as i_link_env), fusion) as env) = function
   | Fuse (x, y) ->
       let i_link_env, x = get_link i_link_env x in
       let i_link_env, y = get_link i_link_env y in
-      ((i_link_env, (x, y) :: fusion), ([], []))
+      (((i_link_env : int * link_env), (x, y) :: fusion), ([], []))
 
 (** [assign_ids atom_i graph] assign unique ids starting from [atom_i] to atoms
     and variables in the graph [graph]. *)
@@ -56,17 +61,17 @@ let subst_links (link_env, (atoms, vars)) xy =
 
 (** [fuse_links link_env_graph fusions] fuses local links in the graph
     [link_env_graph] using the fusions [fusions]. 残りの fusions に対しても substitution
-    を行いながら [link_env] と [graph] のリンクを substitute していく．*)
-let rec fuse_links link_env_graph = function
+    を行いながら [link_env] と [graph] のリンクを substitute していく． [link_env] の自由リンクには代入しない． *)
+let rec fuse_links (link_env_graph : (string * int) list * _) = function
   | [] -> link_env_graph
   | xy :: fusions ->
       fuse_links (subst_links link_env_graph xy)
-      @@ List.map (fun (x, y) -> (subst xy x, subst xy y)) fusions
+      @@ List.map (fun (x, y) -> (x, subst xy y)) fusions
 
 (** [preprocess (atom_i, link_i) graph] preprocesses graph assigning the ids as
     the local links starting from the seed [i]. *)
 let preprocess (atom_i, link_i) graph =
-  let ((link_i, link_env), fusion), graph =
+  let ((link_i, (link_env : (string * int) list)), fusion), graph =
     transform ((link_i, []), []) graph
   in
   let atom_i, graph = assign_ids atom_i graph in
@@ -82,7 +87,7 @@ let local_links_of (link_env, (atoms, vars)) =
 (** [alpha_links graph local_links_i] alpha converts the local links (ids) in
     the graph [graph] into the local links (ids) starting from the integer seed
     [local_link_i] *)
-let alpha_links graph local_link_i =
+let alpha_links (graph : graph) local_link_i =
   let local_links = local_links_of graph in
   let mappings = List.mapi (fun i x -> (x, i + local_link_i)) local_links in
   ( List.length local_links + local_link_i,
@@ -107,13 +112,18 @@ let concat_graphs (atoms, vars) (atoms', vars') = (atoms @ atoms', vars @ vars')
     - やっぱり [var'] の removal もここでやることにした．
 
     @param local_link_i Fresh な local link の id を seed として与える． *)
-let app_prod (link_env, graph) ivar' (var, rhs) (atom_i, local_link_i) =
-  let local_link_i, (rhs_link_env, rhs_graph) = alpha_links rhs local_link_i in
+let app_prod (link_env, graph) (ivar' : atom) ((var : var), (rhs : graph))
+    (atom_i, local_link_i) =
+  let local_link_i, ((rhs_link_env, rhs_graph) : graph) =
+    alpha_links rhs local_link_i
+  in
   let atom_i, rhs_graph = reassign_ids atom_i rhs_graph in
   let graph = (second @@ List.filter @@ ( <> ) ivar') graph in
-  let link_env_graph = (link_env, concat_graphs rhs_graph graph) in
-  let x2y = List.combine (snd @@ snd ivar') (snd var) in
-  let rhs_link_env' = List.map (first @@ flip List.assoc x2y) rhs_link_env in
+  let (link_env_graph : graph) = (link_env, concat_graphs rhs_graph graph) in
+  let x2y : (string * int) list = List.combine (snd var) (snd @@ snd ivar') in
+  let rhs_link_env' =
+    List.map (first @@ flip List.assoc x2y) (rhs_link_env : link_env)
+  in
   ((atom_i, local_link_i), fuse_links link_env_graph rhs_link_env')
 
 (** [size_of_graph graph] returns the size of the graph [graph]. *)
@@ -169,7 +179,7 @@ let string_of_state (sid, ((atom_i, link_i), (link_env, (atoms, vars)))) =
     [prod] to the variable [var] in the state [state] using the state ids [sids]
     if it does not exceed the size [max_size]. *)
 let app_var_prod_opt max_size var sids ((sid, (atom_local_i, graph)) as state)
-    (prod_i, prod) =
+    ((prod_i, prod) : prod) =
   let current_size = size_of_graph graph + (size_of_graph @@ snd prod) - 1 in
   let sid = SIDs.add (fst var, prod_i) sid in
   if
@@ -196,18 +206,31 @@ let rec app_var_prods next_states max_size sids state var = function
 let app_var_prods max_size state prods sids var =
   app_var_prods [] max_size sids state var prods
 
-let app_vars_prods max_size sids state prods vars =
+let app_vars_prods max_size sids state (prods : prod list) vars =
   List.fold_left_map (app_var_prods max_size state prods) sids vars
 
 (** [state = (sid, (atom_local_i, (link_env, (atoms, vars))))] *)
 let vars_of_state (_, (_, (_, (_, vars)))) = vars
 
-let gen_1_step max_size prods sids state =
+let gen_1_step max_size (prods : prod list) sids state =
   let vars = vars_of_state state in
   let sids, next_stateses = app_vars_prods max_size sids state prods vars in
   let next_states = List.concat next_stateses in
   (sids, next_states)
 
-let rec gen max_size prods (sids, states) state =
+let rec gen max_size (prods : prod list) (sids, states) state =
   let sids, next_states = gen_1_step max_size prods sids state in
   List.fold_left (gen max_size prods) (sids, next_states @ states) next_states
+
+let gengen (graph, var, prods) =
+  let env, graph = preprocess (0, 0) graph in
+  let env, initial_graph = preprocess env @@ Var var in
+  let preprocess_rule i env (lhs, rhs) =
+    let env, rhs = preprocess env rhs in
+    (env, ((i, (lhs, rhs)) : prod))
+  in
+  let env, prods = ListExtra.fold_left_mapi preprocess_rule env prods in
+  let max_size = size_of_graph graph * 2 in
+  gen max_size prods (SIDss.empty, []) (SIDs.empty, (env, initial_graph))
+
+let gen_parse str = gengen @@ Parse.parse_ty str
