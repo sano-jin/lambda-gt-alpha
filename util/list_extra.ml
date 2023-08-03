@@ -145,6 +145,10 @@ let combine_opt list1 list2 =
 let string_of_list string_of_elem list =
   "[" ^ String.concat "; " (List.map string_of_elem list) ^ "]"
 
+(** pretty print list with the given pretty printer of the elements *)
+let string_of_seq string_of_elem list =
+  String.concat ", " (List.map string_of_elem list)
+
 (** Set operations. * Note this is not as efficient as the operations that the
     [Set] module provides *)
 
