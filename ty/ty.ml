@@ -221,6 +221,9 @@ let rec gen max_size (prods : prod list) (sids, states) state =
   let sids, next_states = gen_1_step max_size prods sids state in
   List.fold_left (gen max_size prods) (sids, next_states @ states) next_states
 
+(** [gengen (graph, var, prods)] generates graphs applying the production rule
+    [prod] to the given variable [var] until they reaches to twice the size of
+    the graph [graph]. *)
 let gengen (graph, var, prods) =
   let env, graph = preprocess (0, 0) graph in
   let env, initial_graph = preprocess env @@ Var var in
