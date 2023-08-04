@@ -168,9 +168,9 @@ let string_of_state (sid, ((atom_i, link_i), (link_env, (atoms, vars)))) =
            paren @@ string_of_int rule_id ^ ", " ^ string_of_int var_id)
     @@ SIDs.elements sid
   in
-  bracket @@ "sid = " ^ sid ^ ", (atom_i, link_i) = (" ^ string_of_int atom_i
-  ^ ", " ^ string_of_int link_i ^ "), " ^ "link_env = " ^ link_env
-  ^ ", atoms_vars = " ^ atoms_vars ^ ""
+  "  " ^ bracket @@ "sid = " ^ sid ^ ", (atom_i, link_i) = ("
+  ^ string_of_int atom_i ^ ", " ^ string_of_int link_i ^ "), " ^ "link_env = "
+  ^ link_env ^ ", atoms_vars = " ^ atoms_vars ^ ""
 
 (** 非終端記号にルールの適用を試みる．
 
@@ -230,6 +230,10 @@ let gengen (graph, var, prods) =
   in
   let env, prods = ListExtra.fold_left_mapi preprocess_rule env prods in
   let max_size = size_of_graph graph * 2 in
-  gen max_size prods (SIDss.empty, []) (SIDs.empty, (env, initial_graph))
+  let initial_state = (SIDs.empty, (env, initial_graph)) in
+  second List.rev
+  @@ gen max_size prods
+       (SIDss.singleton SIDs.empty, [ initial_state ])
+       initial_state
 
 let gen_parse = gengen <. Parse.parse_ty

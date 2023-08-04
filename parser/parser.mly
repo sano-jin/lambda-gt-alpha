@@ -96,7 +96,7 @@ ty_graph_eof: ty_graph EOF { $1 }
 
 (**  proccesses separeted by comma *)
 ty_rule:
-  | var ARROW graph(ty_atom_name) { ($1, $3) }
+  | var ARROW LCBRACKET graph(ty_atom_name) RCBRACKET { ($1, $4) }
 
 (** arguments of an atom separated by comma without parentheses *)
 let ty_rules := ~ = separated_list(COMMA, ty_rule); <>

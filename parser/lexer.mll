@@ -2,6 +2,8 @@
 
 {
   open Parser
+
+  exception Error of string
 }
 
 let space = [' ' '\t' '\n' '\r']
@@ -79,6 +81,6 @@ rule token = parse
         (Lexing.lexeme_start lexbuf)
         (Lexing.lexeme_end lexbuf)
       in
-      failwith message
+      raise (Error message)
     }
 
