@@ -148,40 +148,41 @@ end)
 
 module SIDss = Set.Make (SIDs)
 
-let string_of_state (sid, ((atom_i, link_i), (link_env, (atoms, vars)))) =
-  let of_locallink x = "_L" ^ string_of_int x in
-  let paren str = "(" ^ str ^ ")" in
-  let cbra str = "{" ^ str ^ "}" in
-  let bra str = "[" ^ str ^ "]" in
-  let of_links = ListExtra.string_of_seq of_locallink in
-  let of_atom (atom_i, (p, xs)) =
-    string_of_int atom_i ^ " : " ^ p ^ paren @@ of_links xs
-  in
-  let of_var (atom_i, (p, xs)) =
-    string_of_int atom_i ^ " : " ^ p ^ bra @@ of_links xs
-  in
+(** Pretty printers *)
+
+let string_of_sid sid =
+  ListExtra.string_of_seq (uncurry @@ Printf.sprintf "(%d,%d)")
+  @@ SIDs.elements sid
+
+let string_of_locallink x = Printf.sprintf "_L%d" x
+let string_of_links = ListExtra.string_of_seq string_of_locallink
+
+let string_of_atom (atom_i, (p, xs)) =
+  Printf.sprintf "%d: %s(%s)" atom_i p @@ string_of_links xs
+
+let string_of_var (atom_i, (p, xs)) =
+  Printf.sprintf "%d: %s[%s]" atom_i p @@ string_of_links xs
+
+let string_of_state (sid, (_atom_link_i, (link_env, (atoms, vars)))) =
   let atoms_vars =
-    String.concat ", " @@ List.map of_atom atoms @ List.map of_var vars
+    String.concat ", "
+    @@ List.map string_of_atom (List.rev atoms)
+    @ List.map string_of_var (List.rev vars)
   in
   let link_env =
-    ListExtra.string_of_seq (fun (x, l) -> x ^ " -> " ^ of_locallink l) link_env
+    ListExtra.string_of_seq
+      (fun (x, l) -> Printf.sprintf "%s -> %s" x @@ string_of_locallink l)
+      link_env
   in
-  let sid =
-    cbra
-    @@ ListExtra.string_of_seq (fun (rule_id, var_id) ->
-           paren @@ string_of_int rule_id ^ ", " ^ string_of_int var_id)
-    @@ SIDs.elements sid
-  in
-  "  " ^ cbra @@ "sid = " ^ sid ^ ", (atom_i, link_i) = ("
-  ^ string_of_int atom_i ^ ", " ^ string_of_int link_i ^ "), " ^ "link_env = "
-  ^ link_env ^ ", atoms_vars = " ^ atoms_vars ^ ""
+  let sid = string_of_sid sid in
+  Printf.sprintf "\tsid = {%s}\n\t\tgraph = %s. (%s)" sid link_env atoms_vars
 
 (** 非終端記号にルールの適用を試みる．
 
     [app_prod_opt max_size var sids state prod] applies the production rule
     [prod] to the variable [var] in the state [state] using the state ids [sids]
     if it does not exceed the size [max_size]. *)
-let app_var_prod_opt max_size var sids ((sid, (atom_local_i, graph)) as state)
+let app_var_prod_opt max_size var sids (sid, (atom_local_i, graph))
     ((prod_i, prod) : prod) =
   let current_size = size_of_graph graph + (size_of_graph @@ snd prod) - 1 in
   let sid = SIDs.add (fst var, prod_i) sid in
@@ -190,8 +191,9 @@ let app_var_prod_opt max_size var sids ((sid, (atom_local_i, graph)) as state)
     && max_size >= current_size
     && not (SIDss.mem sid sids)
   then (
-    print_endline @@ string_of_state state;
-    Some (sid, app_prod graph var prod atom_local_i))
+    let next_state = (sid, app_prod graph var prod atom_local_i) in
+    print_endline @@ string_of_state next_state;
+    Some next_state)
   else None
 
 (** [app_var_prods next_states max_size sids state var prods] *)

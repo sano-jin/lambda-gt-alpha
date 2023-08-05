@@ -4,7 +4,7 @@ let test str =
   prerr_endline @@ "Case " ^ str;
   prerr_endline @@ "  parsing ... ";
   prerr_endline @@ "  running ... ";
-  print_endline @@ "  >" ^ String.concat "\n  >"
+  print_endline @@ "  > " ^ String.concat "\n  > "
   @@ List.map Ty.string_of_state
   @@ snd @@ Ty.gen_parse str;
   prerr_endline @@ "  end running ... "
