@@ -88,7 +88,7 @@ let local_links_of (link_env, (atoms, vars)) =
 (** [alpha_links graph local_links_i] alpha converts the local links (ids) in
     the graph [graph] into the local links (ids) starting from the integer seed
     [local_link_i] *)
-let alpha_links (graph : graph) local_link_i =
+let alpha_links graph local_link_i =
   let local_links = local_links_of graph in
   let mappings = List.mapi (fun i x -> (x, i + local_link_i)) local_links in
   ( List.length local_links + local_link_i,
@@ -115,9 +115,7 @@ let concat_graphs (atoms, vars) (atoms', vars') = (atoms @ atoms', vars @ vars')
     @param local_link_i Fresh な local link の id を seed として与える． *)
 let app_prod (link_env, graph) (ivar' : atom) ((var : var), (rhs : graph))
     (atom_i, local_link_i) =
-  let local_link_i, ((rhs_link_env, rhs_graph) : graph) =
-    alpha_links rhs local_link_i
-  in
+  let local_link_i, (rhs_link_env, rhs_graph) = alpha_links rhs local_link_i in
   let atom_i, rhs_graph = reassign_ids atom_i rhs_graph in
   let graph = (second @@ List.filter @@ ( <> ) ivar') graph in
   let (link_env_graph : graph) = (link_env, concat_graphs rhs_graph graph) in
@@ -211,19 +209,17 @@ let rec app_var_prods next_states max_size sids state var = function
 let app_var_prods max_size state prods sids var =
   app_var_prods [] max_size sids state var prods
 
-let app_vars_prods max_size sids state (prods : prod list) vars =
-  List.fold_left_map (app_var_prods max_size state prods) sids vars
+let app_vars_prods = List.fold_left_map <... app_var_prods
 
 (** [state = (sid, (atom_local_i, (link_env, (atoms, vars))))] *)
 let vars_of_state (_, (_, (_, (_, vars)))) = vars
 
-let gen_1_step max_size (prods : prod list) sids state =
+let gen_1_step max_size prods sids state =
   let vars = vars_of_state state in
-  let sids, next_stateses = app_vars_prods max_size sids state prods vars in
-  let next_states = List.concat next_stateses in
-  (sids, next_states)
+  let sids, next_stateses = app_vars_prods max_size state prods sids vars in
+  (sids, List.concat next_stateses)
 
-let rec gen max_size (prods : prod list) (sids, states) state =
+let rec gen max_size prods (sids, states) state =
   let sids, next_states = gen_1_step max_size prods sids state in
   List.fold_left (gen max_size prods) (sids, next_states @ states) next_states
 
