@@ -18,29 +18,33 @@ let test () =
     "nu _L. (Cons(_L, _X), Nil(_L)) : x[_X] { x[_X] -> { nu _L. (Cons(_L, _X), \
      x[_L]) } }";
 
-  test "1";
-
-  test "1 ()";
-
-  test "1 (_X)";
-
-  test "Cons (_Z, _X)";
-
-  test "x [_Z, _X]";
-
-  test "nu _Z. (Cons (_Z, _X), Cons(_Y, _Z))";
-
-  test "nu _Z. (x [_Z, _X], y [_Y, _Z])";
-
-  test "nu _Z1. nu _Z2. (x [_Z1, _X], y [_Z2, _Z1], Cons(_Y, _Z2))";
-
-  test "nu _Z1 _Z2. (x [_Z1, _X], y [_Z2, _Z1], Cons(_Y, _Z2))";
+  test
+    "nu _L. (Cons(_L, _X), Cons(_Y, _L)) : dlist[_Y, _X] { dlist[_U, _V] -> { \
+     nu _L. (Cons(_L, _V), dlist[_U, _L]) }, dlist[_U, _V] -> { _V >< _U }}";
 
   test
-    "nu _L0 _L1 _L2 _L3 _L4. (M (_L), Node (_L0, _L1, _X), Leaf (_L2, _L, _L3, \
-     _L0), Zero (_L2), Leaf (_L4, _L3, _R, _L1), Zero (_L4))"
+    "nu _L _L1 _L2. (Cons(_L1, _L, _X), int[_L1], Cons(_L2, _Y, _L), int[_L2]) \
+     : dlist[_Y, _X] { dlist[_U, _V] -> { nu _L _L1. (Cons(_L1, _L, _V), \
+     int[_L1], dlist[_U, _L]) }, dlist[_U, _V] -> { _V >< _U }}"
 
-(* test_exp "{nu _Z. (x [_Z, _X], y [_Y, _Z])}";
+(* test "1 (_X)";
+
+   test "Cons (_Z, _X)";
+
+   test "x [_Z, _X]";
+
+   test "nu _Z. (Cons (_Z, _X), Cons(_Y, _Z))";
+
+   test "nu _Z. (x [_Z, _X], y [_Y, _Z])";
+
+   test "nu _Z1. nu _Z2. (x [_Z1, _X], y [_Z2, _Z1], Cons(_Y, _Z2))";
+
+   test "nu _Z1 _Z2. (x [_Z1, _X], y [_Z2, _Z1], Cons(_Y, _Z2))";
+
+   test "nu _L0 _L1 _L2 _L3 _L4. (M (_L), Node (_L0, _L1, _X), Leaf (_L2, _L,
+   _L3, \ _L0), Zero (_L2), Leaf (_L4, _L3, _R, _L1), Zero (_L4))"
+
+   test_exp "{nu _Z. (x [_Z, _X], y [_Y, _Z])}";
 
    test_exp "{f} {nu _Z. (x [_Z, _X], y [_Y, _Z])}";
 

@@ -149,26 +149,30 @@ end)
 module SIDss = Set.Make (SIDs)
 
 let string_of_state (sid, ((atom_i, link_i), (link_env, (atoms, vars)))) =
-  let of_locallink x = "L" ^ string_of_int x in
+  let of_locallink x = "_L" ^ string_of_int x in
   let paren str = "(" ^ str ^ ")" in
-  let bracket str = "{" ^ str ^ "}" in
-  let of_links = paren <. ListExtra.string_of_seq of_locallink in
+  let cbra str = "{" ^ str ^ "}" in
+  let bra str = "[" ^ str ^ "]" in
+  let of_links = ListExtra.string_of_seq of_locallink in
   let of_atom (atom_i, (p, xs)) =
-    string_of_int atom_i ^ " : " ^ p ^ of_links xs
+    string_of_int atom_i ^ " : " ^ p ^ paren @@ of_links xs
+  in
+  let of_var (atom_i, (p, xs)) =
+    string_of_int atom_i ^ " : " ^ p ^ bra @@ of_links xs
   in
   let atoms_vars =
-    String.concat ", " @@ List.map of_atom atoms @ List.map of_atom vars
+    String.concat ", " @@ List.map of_atom atoms @ List.map of_var vars
   in
   let link_env =
     ListExtra.string_of_seq (fun (x, l) -> x ^ " -> " ^ of_locallink l) link_env
   in
   let sid =
-    bracket
+    cbra
     @@ ListExtra.string_of_seq (fun (rule_id, var_id) ->
            paren @@ string_of_int rule_id ^ ", " ^ string_of_int var_id)
     @@ SIDs.elements sid
   in
-  "  " ^ bracket @@ "sid = " ^ sid ^ ", (atom_i, link_i) = ("
+  "  " ^ cbra @@ "sid = " ^ sid ^ ", (atom_i, link_i) = ("
   ^ string_of_int atom_i ^ ", " ^ string_of_int link_i ^ "), " ^ "link_env = "
   ^ link_env ^ ", atoms_vars = " ^ atoms_vars ^ ""
 
