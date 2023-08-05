@@ -234,7 +234,7 @@ let gengen (graph, var, prods) =
     (env, ((i, (lhs, rhs)) : prod))
   in
   let env, prods = ListExtra.fold_left_mapi preprocess_rule env prods in
-  let max_size = size_of_graph graph * 2 in
+  let max_size = size_of_graph graph * 160 in
   let initial_state = (SIDs.empty, (env, initial_graph)) in
   second List.rev
   @@ gen max_size prods
