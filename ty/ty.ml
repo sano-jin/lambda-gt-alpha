@@ -242,3 +242,18 @@ let gengen (graph, var, prods) =
        initial_state
 
 let gen_parse = gengen <. Parse.parse_ty
+
+(** [reasign_atom_ids graph] reasignes the ids for atoms and variables so that
+    the ids starts from the number of the hyperlinks. *)
+let reasign_atom_ids (link_env, (atoms, vars)) =
+  let fl_num = List.length link_env in
+  let atom_num = List.length atoms in
+  let atoms = List.mapi (fun i (_, atom) -> (i + fl_num, atom)) atoms in
+  let vars = List.mapi (fun i (_, var) -> (i + fl_num + atom_num, var)) vars in
+  (link_env, (atoms, vars))
+
+(** [pretty graph] outputs a graph representation that is easier to handle for
+    external tool (NetworkX). *)
+let pretty graph =
+  let link_env, (atoms, vars) = reasign_atom_ids graph in
+  (link_env, (atoms, vars))
