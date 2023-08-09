@@ -1,0 +1,9 @@
+(executable
+ (public_name lambda_gt_alpha.repair)
+ (name repair)
+ (libraries
+  lambda_gt_alpha.ty
+  lambda_gt_alpha.util
+  lambda_gt_alpha.parser
+  base
+  yojson))

@@ -7,8 +7,6 @@ let test str =
   print_endline @@ "\n    " ^ String.concat "\n    "
   @@ List.map (Ty.string_of_graph Ty.string_of_atom <. Ty.pretty <. snd <. snd)
   @@ snd @@ Ty.gen_parse str;
-  print_endline @@ Yojson.Basic.pretty_to_string @@ Ty.json_of_graphs
-  @@ Ty.gen_parse str;
   prerr_endline @@ "  end running ... "
 
 let test () =

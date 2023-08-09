@@ -194,7 +194,7 @@ let app_var_prod_opt max_size var sids (sid, (atom_local_i, graph))
     && not (SIDss.mem sid sids)
   then (
     let next_state = (sid, app_prod graph var prod atom_local_i) in
-    print_endline @@ string_of_state string_of_var next_state;
+    prerr_endline @@ string_of_state string_of_var next_state;
     Some next_state)
   else None
 
@@ -240,10 +240,11 @@ let gengen (graph, var, prods) =
   let env, prods = ListExtra.fold_left_mapi preprocess_rule env prods in
   let max_size = size_of_graph graph * 2 in
   let initial_state = (SIDs.empty, (env, initial_graph)) in
-  second List.rev
-  @@ gen max_size prods
-       (SIDss.singleton SIDs.empty, [ initial_state ])
-       initial_state
+  ( graph,
+    List.rev @@ snd
+    @@ gen max_size prods
+         (SIDss.singleton SIDs.empty, [ initial_state ])
+         initial_state )
 
 let gen_parse = gengen <. Parse.parse_ty
 
@@ -281,7 +282,7 @@ let json_of_graph (vertices, edges) =
     `Assoc [ ("id", `Int atom_id); ("label", `String label) ]
   in
   let json_of_edge (v, u, label) =
-    `Assoc [ ("from", `Int v); ("from", `Int u); ("label", `Int label) ]
+    `Assoc [ ("from", `Int v); ("to", `Int u); ("label", `Int label) ]
   in
   `Assoc
     [
@@ -290,4 +291,11 @@ let json_of_graph (vertices, edges) =
     ]
 
 let json_of_graphs states =
-  `List (List.map (json_of_graph <. pretty_graph <. snd <. snd) @@ snd @@ states)
+  `List (List.map (json_of_graph <. pretty_graph <. snd <. snd) @@ states)
+
+let json_of_repair (graph, states) =
+  `Assoc
+    [
+      ("query", json_of_graph @@ pretty_graph @@ graph);
+      ("graphs", json_of_graphs states);
+    ]
