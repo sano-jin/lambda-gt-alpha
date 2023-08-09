@@ -288,3 +288,6 @@ let json_of_graph (vertices, edges) =
       ("vertices", `List (List.map json_of_vertex vertices));
       ("edges", `List (List.map json_of_edge edges));
     ]
+
+let json_of_graphs states =
+  `List (List.map (json_of_graph <. pretty_graph <. snd <. snd) @@ snd @@ states)

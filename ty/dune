@@ -1,4 +1,4 @@
 (library
  (public_name lambda_gt_alpha.ty)
  (name ty)
- (libraries lambda_gt_alpha.util lambda_gt_alpha.parser base))
+ (libraries lambda_gt_alpha.util lambda_gt_alpha.parser base yojson))
