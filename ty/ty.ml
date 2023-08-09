@@ -44,7 +44,7 @@ let rec transform ((i, link_env) as env) = function
 
 (** [assign_ids atom_i graph] assign unique ids starting from [atom_i] to atoms
     and variables in the graph [graph]. *)
-let assign_ids atom_i (atoms, vars) =
+let assign_atom_ids atom_i (atoms, vars) =
   let num_atoms = List.length atoms in
   let num_vars = List.length vars in
   let atoms = List.mapi (fun i atom -> (i + atom_i, atom)) atoms in
@@ -75,7 +75,7 @@ let preprocess (atom_i, link_i) graph =
   let (link_i, (link_env : (string * int) list)), fusion, graph =
     transform (link_i, []) graph
   in
-  let atom_i, graph = assign_ids atom_i graph in
+  let atom_i, graph = assign_atom_ids atom_i graph in
   let link_env, graph = fuse_links (link_env, graph) fusion in
   ((atom_i, link_i), (link_env, graph))
 
@@ -88,17 +88,17 @@ let local_links_of (link_env, (atoms, vars)) =
 (** [alpha_links graph local_links_i] alpha converts the local links (ids) in
     the graph [graph] into the local links (ids) starting from the integer seed
     [local_link_i] *)
-let alpha_links graph local_link_i =
+let alpha_links local_link_i graph =
   let local_links = local_links_of graph in
   let mappings = List.mapi (fun i x -> (x, i + local_link_i)) local_links in
   ( List.length local_links + local_link_i,
     List.fold_left subst_links graph mappings )
 
-(** [reassign_ids graph atom_i] assign unique ids starting from [atom_i] to
+(** [reassign_atom_ids graph atom_i] assign unique ids starting from [atom_i] to
     atoms and variables in the graph [graph]. *)
-let reassign_ids atom_i (atoms, vars) =
+let reassign_atom_ids atom_i (atoms, vars) =
   let graph = (List.map snd atoms, List.map snd vars) in
-  assign_ids atom_i graph
+  assign_atom_ids atom_i graph
 
 let concat_graphs (atoms, vars) (atoms', vars') = (atoms @ atoms', vars @ vars')
 
@@ -115,8 +115,8 @@ let concat_graphs (atoms, vars) (atoms', vars') = (atoms @ atoms', vars @ vars')
     @param local_link_i Fresh な local link の id を seed として与える． *)
 let app_prod (link_env, graph) (ivar' : atom) ((var : var), (rhs : graph))
     (atom_i, local_link_i) =
-  let local_link_i, (rhs_link_env, rhs_graph) = alpha_links rhs local_link_i in
-  let atom_i, rhs_graph = reassign_ids atom_i rhs_graph in
+  let local_link_i, (rhs_link_env, rhs_graph) = alpha_links local_link_i rhs in
+  let atom_i, rhs_graph = reassign_atom_ids atom_i rhs_graph in
   let graph = (second @@ List.filter @@ ( <> ) ivar') graph in
   let (link_env_graph : graph) = (link_env, concat_graphs rhs_graph graph) in
   let x2y : (string * int) list = List.combine (snd var) (snd @@ snd ivar') in
@@ -247,13 +247,44 @@ let gengen (graph, var, prods) =
 
 let gen_parse = gengen <. Parse.parse_ty
 
-(** [reasign_atom_ids graph] reasignes the ids for atoms and variables so that
-    the ids starts from the number of the hyperlinks. *)
-let reasign_atom_ids ((link_env, _) as graph) =
-  (link_env, snd @@ assign_ids (List.length link_env) graph)
-
 (** [pretty graph] outputs a graph representation that is easier to handle for
     external tool (NetworkX). *)
 let pretty graph =
-  let link_env, (atoms, vars) = reasign_atom_ids graph in
-  (link_env, (atoms, vars))
+  let _, graph = alpha_links 0 graph in
+  graph
+
+(** [pretty graph] outputs a graph representation that is easier to handle for
+    external tool (NetworkX). *)
+let pretty_graph ((link_env, (atoms, vars)) as graph) =
+  let vn = List.length atoms + List.length vars in
+  let hn = List.length link_env in
+  let _, (link_env, (atoms, vars)) = alpha_links (vn + hn) graph in
+  (* let _link_labels = ListExtra.gather @@ List.map swap link_env in *)
+  let vertices = atoms @ vars in
+  let links_of_atom (atom_i, (_, xs)) =
+    let link_of arg_i x = (atom_i, x, arg_i) in
+    List.mapi link_of xs
+  in
+  let hlinks, hlink_edges =
+    List.split
+    @@ List.mapi (fun i (fl, ll) -> ((i + vn, fl), (i + vn, ll, 0))) link_env
+  in
+  let vs =
+    let helper (atom_i, (p, _)) = (atom_i, p) in
+    List.map helper vertices
+  in
+  let edges = hlink_edges @ List.concat_map links_of_atom vertices in
+  (hlinks @ vs, edges)
+
+let json_of_graph (vertices, edges) =
+  let json_of_vertex (atom_id, label) =
+    `Assoc [ ("id", `Int atom_id); ("label", `String label) ]
+  in
+  let json_of_edge (v, u, label) =
+    `Assoc [ ("from", `Int v); ("from", `Int u); ("label", `Int label) ]
+  in
+  `Assoc
+    [
+      ("vertices", `List (List.map json_of_vertex vertices));
+      ("edges", `List (List.map json_of_edge edges));
+    ]

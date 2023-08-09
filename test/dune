@@ -5,4 +5,5 @@
   lambda_gt_alpha.util
   lambda_gt_alpha.parser
   lambda_gt_alpha.gt
-  lambda_gt_alpha.eval))
+  lambda_gt_alpha.eval
+  yojson))

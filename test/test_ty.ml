@@ -5,7 +5,12 @@ let test str =
   prerr_endline @@ "  parsing ... ";
   prerr_endline @@ "  running ... ";
   print_endline @@ "\n    " ^ String.concat "\n    "
-  @@ List.map (Ty.string_of_graph Ty.string_of_atom <. snd <. snd)
+  @@ List.map (Ty.string_of_graph Ty.string_of_atom <. Ty.pretty <. snd <. snd)
+  @@ snd @@ Ty.gen_parse str;
+  print_endline @@ "\n    " ^ String.concat "\n    "
+  @@ List.map
+       (Yojson.Basic.pretty_to_string <. Ty.json_of_graph <. Ty.pretty_graph
+      <. snd <. snd)
   @@ snd @@ Ty.gen_parse str;
   prerr_endline @@ "  end running ... "
 
