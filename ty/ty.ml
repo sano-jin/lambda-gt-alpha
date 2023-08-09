@@ -149,31 +149,35 @@ module SIDss = Set.Make (SIDs)
 (** Pretty printers *)
 
 let string_of_sid sid =
-  ListExtra.string_of_seq (uncurry @@ Printf.sprintf "(%d,%d)")
+  ListExtra.string_of_seq (uncurry @@ Printf.sprintf "%d/%d")
   @@ SIDs.elements sid
 
 let string_of_locallink x = Printf.sprintf "_L%d" x
 let string_of_links = ListExtra.string_of_seq string_of_locallink
 
-let string_of_atom (atom_i, (p, xs)) =
-  Printf.sprintf "%d: %s(%s)" atom_i p @@ string_of_links xs
+let string_of_atom (_, (p, xs)) =
+  Printf.sprintf "%s(%s)" p @@ string_of_links xs
 
 let string_of_var (atom_i, (p, xs)) =
   Printf.sprintf "%d: %s[%s]" atom_i p @@ string_of_links xs
 
-let string_of_state (sid, (_atom_link_i, (link_env, (atoms, vars)))) =
+let string_of_graph string_of_atom (link_env, (atoms, vars)) =
   let atoms_vars =
     String.concat ", "
     @@ List.map string_of_atom (List.rev atoms)
-    @ List.map string_of_var (List.rev vars)
+    @ List.map string_of_atom (List.rev vars)
   in
   let link_env =
     ListExtra.string_of_seq
-      (fun (x, l) -> Printf.sprintf "%s -> %s" x @@ string_of_locallink l)
+      (fun (x, l) -> Printf.sprintf "%s->%s" x @@ string_of_locallink l)
       link_env
   in
+  Printf.sprintf "%s. (%s)" link_env atoms_vars
+
+let string_of_state string_of_atom (sid, (_atom_link_i, graph)) =
   let sid = string_of_sid sid in
-  Printf.sprintf "\tsid = {%s}\n\t\tgraph = %s. (%s)" sid link_env atoms_vars
+  Printf.sprintf "\tsid = {%s}\n\t  graph = %s" sid
+  @@ string_of_graph string_of_atom graph
 
 (** 非終端記号にルールの適用を試みる．
 
@@ -190,7 +194,7 @@ let app_var_prod_opt max_size var sids (sid, (atom_local_i, graph))
     && not (SIDss.mem sid sids)
   then (
     let next_state = (sid, app_prod graph var prod atom_local_i) in
-    print_endline @@ string_of_state next_state;
+    print_endline @@ string_of_state string_of_var next_state;
     Some next_state)
   else None
 
@@ -234,7 +238,7 @@ let gengen (graph, var, prods) =
     (env, ((i, (lhs, rhs)) : prod))
   in
   let env, prods = ListExtra.fold_left_mapi preprocess_rule env prods in
-  let max_size = size_of_graph graph * 160 in
+  let max_size = size_of_graph graph * 2 in
   let initial_state = (SIDs.empty, (env, initial_graph)) in
   second List.rev
   @@ gen max_size prods

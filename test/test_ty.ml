@@ -4,8 +4,8 @@ let test str =
   prerr_endline @@ "Case " ^ str;
   prerr_endline @@ "  parsing ... ";
   prerr_endline @@ "  running ... ";
-  print_endline @@ "  > " ^ String.concat "\n  > "
-  @@ List.map Ty.string_of_state
+  print_endline @@ "\n    " ^ String.concat "\n    "
+  @@ List.map (Ty.string_of_graph Ty.string_of_atom <. snd <. snd)
   @@ snd @@ Ty.gen_parse str;
   prerr_endline @@ "  end running ... "
 
@@ -20,12 +20,12 @@ let test () =
 
   test
     "nu _L. (Cons(_L, _X), Cons(_Y, _L)) : dlist[_Y, _X] { dlist[_U, _V] -> { \
-     nu _L. (Cons(_L, _V), dlist[_U, _L]) }, dlist[_U, _V] -> { _V >< _U }}";
+     _V >< _U }, dlist[_U, _V] -> { nu _L. (Cons(_L, _V), dlist[_U, _L]) }}";
 
   test
     "nu _L _L1 _L2. (Cons(_L1, _L, _X), int[_L1], Cons(_L2, _Y, _L), int[_L2]) \
-     : dlist[_Y, _X] { dlist[_U, _V] -> { nu _L _L1. (Cons(_L1, _L, _V), \
-     int[_L1], dlist[_U, _L]) }, dlist[_U, _V] -> { _V >< _U }}"
+     : dlist[_Y, _X] { dlist[_U, _V] -> { _V >< _U }, dlist[_U, _V] -> { nu _L \
+     _L1. (Cons(_L1, _L, _V), int[_L1], dlist[_U, _L]) }}"
 
 (* test "1 (_X)";
 
