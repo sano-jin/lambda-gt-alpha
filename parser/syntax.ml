@@ -46,4 +46,5 @@ and exp =
   | LetRec of var * var * exp * exp  (** let rec f x = e1 in e2 *)
   | Let of var * exp * exp  (** let x = e1 in e2 *)
 
+(** The expression of the Lambda GT language. *)
 let make_lambda (_, xs) var exp = Graph (Atom (PLam (var, exp), xs))

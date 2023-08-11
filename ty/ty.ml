@@ -259,7 +259,7 @@ let pretty graph =
 let pretty_graph ((link_env, (atoms, vars)) as graph) =
   let vn = List.length atoms + List.length vars in
   let hn = List.length link_env in
-  let _, (link_env, atoms_vars) = alpha_links (vn + hn) graph in
+  let _, ((link_env, atoms_vars) as graph) = alpha_links (vn + hn) graph in
   let _, (atoms, vars) = reassign_atom_ids 0 atoms_vars in
   (* let _link_labels = ListExtra.gather @@ List.map swap link_env in *)
   let vertices = atoms @ vars in
@@ -276,7 +276,8 @@ let pretty_graph ((link_env, (atoms, vars)) as graph) =
     List.map helper vertices
   in
   let edges = hlink_edges @ List.concat_map links_of_atom vertices in
-  (hlinks @ vs, edges)
+  let local_links = List.map(fun i -> (i, "_")) @@ local_links_of graph in
+  (hlinks @ vs @ local_links, edges)
 
 let json_of_graph graph =
   let vertices, edges = pretty_graph graph in
@@ -299,3 +300,15 @@ let json_of_graphs states =
 let json_of_repair (graph, states) =
   `Assoc
     [ ("query", json_of_graph @@ graph); ("graphs", json_of_graphs states) ]
+
+(** [adjlist_of_graph graph] returns a string which is an adjacency list
+    represenation of the graph [graph]. *)
+let adjlist_of_graph graph =
+  let vertices, edges = pretty_graph graph in
+  let adj_of_vertex (id, label) = Printf.sprintf "%d %s" id label in
+  let adj_of_edge (from, to_, label) =
+    Printf.sprintf "%d %d %d" from to_ label
+  in
+  String.concat "\n"
+  @@ List.map adj_of_vertex vertices
+  @ List.map adj_of_edge edges
